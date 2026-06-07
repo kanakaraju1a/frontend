@@ -1,0 +1,15 @@
+{
+  "name": "FileFlow",
+  "short_name": "FileFlow",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "theme_color": "#111318",
+  "background_color": "#F5F4F0",
+  "display": "standalone"
+}
