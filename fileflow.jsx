@@ -39,6 +39,27 @@ function downloadBlob(blob, filename) {
   URL.revokeObjectURL(url);
 }
 
+const FILEFLOW_UPLOAD_COUNT_KEY = "fileflow_uploaded_count";
+
+function getUploadedCount() {
+  try {
+    return Math.max(0, Number(localStorage.getItem(FILEFLOW_UPLOAD_COUNT_KEY)) || 0);
+  } catch {
+    return 0;
+  }
+}
+
+function trackUploadedFiles(count) {
+  if (!count) return;
+  try {
+    const next = getUploadedCount() + count;
+    localStorage.setItem(FILEFLOW_UPLOAD_COUNT_KEY, String(next));
+    window.dispatchEvent(new CustomEvent("fileflow-upload-count", { detail: next }));
+  } catch {
+    // Ignore private browsing or storage restrictions.
+  }
+}
+
 async function postFile(endpoint, file, outputName, onProgress, progressValue) {
   const formData = new FormData();
   formData.append("file", file, file.name);
@@ -1037,7 +1058,11 @@ function ConverterPage({ meta, page }) {
 
   const addFiles = f => {
     setStatus("idle"); setErrMsg("");
-    setFiles(prev => [...prev, ...f.filter(nf => !prev.find(x => x.name === nf.name))]);
+    setFiles(prev => {
+      const nextFiles = f.filter(nf => !prev.find(x => x.name === nf.name));
+      trackUploadedFiles(nextFiles.length);
+      return [...prev, ...nextFiles];
+    });
   };
   const remove = i => setFiles(f => f.filter((_, idx) => idx !== i));
 
@@ -1180,7 +1205,9 @@ function SplitPdfPage() {
   const [errMsg, setErrMsg] = useState("");
 
   const addFiles = files => {
-    setFile(files.find(f => /\.pdf$/i.test(f.name)) || null);
+    const nextFile = files.find(f => /\.pdf$/i.test(f.name)) || null;
+    setFile(nextFile);
+    if (nextFile) trackUploadedFiles(1);
     setStatus("idle");
     setErrMsg("");
     setProgress(0);
@@ -1316,6 +1343,7 @@ function CompressPdfPage() {
   const addFiles = async files => {
     const pdfFile = files.find(f => /\.pdf$/i.test(f.name)) || null;
     setFile(pdfFile);
+    if (pdfFile) trackUploadedFiles(1);
     setStatus("idle");
     setErrMsg("");
     setOutputSize(null);
@@ -1513,6 +1541,7 @@ function PdfEditorPage() {
 
   const loadMainPdf = async file => {
     if (!file) return;
+    trackUploadedFiles(1);
     setStatus("loading"); setProgress(0); setErrMsg("");
     try {
       const bytes = await file.arrayBuffer();
@@ -1529,6 +1558,7 @@ function PdfEditorPage() {
 
   const loadRightPdf = async file => {
     if (!file) return;
+    trackUploadedFiles(1);
     setStatus("loading"); setProgress(0); setErrMsg("");
     try {
       const bytes = await file.arrayBuffer();
@@ -1592,6 +1622,7 @@ function PdfEditorPage() {
 
   const addImage = async file => {
     if (!file || !activePage) return;
+    trackUploadedFiles(1);
     const dataUrl = await readAsDataUrl(file);
     const bytes = await file.arrayBuffer();
     const img = new window.Image();
@@ -1959,6 +1990,18 @@ function PdfEditorPage() {
 }
 
 function HomePage({ go }) {
+  const [uploadedCount, setUploadedCount] = useState(getUploadedCount);
+  useEffect(() => {
+    const sync = event => setUploadedCount(Number(event.detail) || getUploadedCount());
+    const syncStorage = () => setUploadedCount(getUploadedCount());
+    window.addEventListener("fileflow-upload-count", sync);
+    window.addEventListener("storage", syncStorage);
+    return () => {
+      window.removeEventListener("fileflow-upload-count", sync);
+      window.removeEventListener("storage", syncStorage);
+    };
+  }, []);
+
   return (
     <div>
       <div style={{ background: T.color.dark, padding: "72px 20px 80px", textAlign: "center", position: "relative", overflow: "hidden" }}>
@@ -2015,7 +2058,7 @@ function HomePage({ go }) {
           {[
             { n: "10M+", l: "Files Converted", Icon: File },
             { n: "100%", l: "Free Forever", Icon: Gift },
-            { n: "0", l: "Files Uploaded", Icon: Shield },
+            { n: uploadedCount.toLocaleString(), l: "Files Uploaded", Icon: Shield },
             { n: "50+", l: "Formats Supported", Icon: Zap },
           ].map(({ n, l, Icon: Ic }) => (
             <div key={l}>
