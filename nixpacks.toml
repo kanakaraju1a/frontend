@@ -1,0 +1,5 @@
+[phases.setup]
+nixPkgs = ["python311", "libreoffice"]
+
+[start]
+cmd = "python server.py"
