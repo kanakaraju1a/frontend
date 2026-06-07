@@ -133,6 +133,9 @@ class Handler(BaseHTTPRequestHandler):
             if isinstance(exc, ValueError):
                 message = str(exc)
                 status = 400
+            elif isinstance(exc, RuntimeError):
+                message = str(exc)
+                status = 500
             else:
                 message = "Conversion failed. Please check the file and try again."
                 status = 500

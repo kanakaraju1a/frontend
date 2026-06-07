@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.git/
+.python_packages/
+__pycache__/
+*.py[cod]
+*.log
+.env
+.env.*
+.vercel/
+.railway/

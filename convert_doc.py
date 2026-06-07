@@ -34,6 +34,9 @@ def convert_doc_to_pdf(input_path, output_path):
             generated.replace(output_path)
         return
 
+    if not shutil.which("powershell"):
+        raise RuntimeError("Document to PDF is unavailable because LibreOffice is not installed on the backend.")
+
     command = f"""
 $ErrorActionPreference = 'Stop'
 $word = New-Object -ComObject Word.Application
