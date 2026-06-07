@@ -1,112 +1,112 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://fileflow.app/</loc>
+    <loc>https://file-flows.vercel.app/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/pdf-to-doc/</loc>
+    <loc>https://file-flows.vercel.app/pdf-to-doc/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/pdf-to-word/</loc>
+    <loc>https://file-flows.vercel.app/pdf-to-word/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/doc-to-pdf/</loc>
+    <loc>https://file-flows.vercel.app/doc-to-pdf/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/word-to-pdf/</loc>
+    <loc>https://file-flows.vercel.app/word-to-pdf/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/image-to-pdf/</loc>
+    <loc>https://file-flows.vercel.app/image-to-pdf/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/pdf-to-jpg/</loc>
+    <loc>https://file-flows.vercel.app/pdf-to-jpg/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/jpg-to-pdf/</loc>
+    <loc>https://file-flows.vercel.app/jpg-to-pdf/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/png-to-pdf/</loc>
+    <loc>https://file-flows.vercel.app/png-to-pdf/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/merge-pdf/</loc>
+    <loc>https://file-flows.vercel.app/merge-pdf/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/split-pdf/</loc>
+    <loc>https://file-flows.vercel.app/split-pdf/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/compress-pdf/</loc>
+    <loc>https://file-flows.vercel.app/compress-pdf/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/pdf-editor/</loc>
+    <loc>https://file-flows.vercel.app/pdf-editor/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/ocr-pdf/</loc>
+    <loc>https://file-flows.vercel.app/ocr-pdf/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/faq/</loc>
+    <loc>https://file-flows.vercel.app/faq/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/about/</loc>
+    <loc>https://file-flows.vercel.app/about/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/contact/</loc>
+    <loc>https://file-flows.vercel.app/contact/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/privacy-policy/</loc>
+    <loc>https://file-flows.vercel.app/privacy-policy/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/terms/</loc>
+    <loc>https://file-flows.vercel.app/terms/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/security/</loc>
+    <loc>https://file-flows.vercel.app/security/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/supported-formats/</loc>
+    <loc>https://file-flows.vercel.app/supported-formats/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://fileflow.app/conversion-quality/</loc>
+    <loc>https://file-flows.vercel.app/conversion-quality/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
