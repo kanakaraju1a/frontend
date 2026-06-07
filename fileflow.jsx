@@ -358,6 +358,8 @@ const T = {
   radius: { sm: 8, md: 14, lg: 20, pill: 999 },
 };
 
+const SITE_URL = "https://file-flows.vercel.app";
+
 const P = {
   HOME: "home", DOC: "doc-to-pdf", WORD_PDF: "word-to-pdf", PDF: "pdf-to-doc", PDF_WORD: "pdf-to-word", IMG: "img-to-pdf",
   PDF_TO_JPG: "pdf-to-jpg", JPG_TO_PDF: "jpg-to-pdf", PNG_TO_PDF: "png-to-pdf",
@@ -674,6 +676,171 @@ const FAQ_DATA = [
   { q: "Which browsers are supported?", a: "Chrome, Firefox, Safari and Edge — all modern versions on desktop and mobile." },
 ];
 
+const TOOL_SEO = {
+  [P.DOC]: {
+    intro: "Convert Word and document files into clean PDFs for sharing, printing and archiving.",
+    steps: ["Upload a DOC, DOCX, RTF, ODT or TXT file.", "Click Convert and wait for FileFlow to process the document.", "Download the finished PDF and review the layout."],
+    faqs: [
+      ["Can I convert DOCX to PDF online?", "Yes. Upload a DOCX file and FileFlow converts it to PDF using the configured backend converter."],
+      ["Will fonts and images stay the same?", "Common fonts, images and tables are preserved best when the backend has LibreOffice or Microsoft Word available."],
+      ["Is DOC to PDF free?", "Yes, FileFlow is free to use for document to PDF conversion."],
+    ],
+  },
+  [P.WORD_PDF]: {
+    intro: "Turn Word documents into PDFs that are easier to share and print.",
+    steps: ["Choose a DOC or DOCX file.", "Run the Word to PDF converter.", "Download the PDF output."],
+    faqs: [
+      ["What Word formats are supported?", "DOC and DOCX files are supported on the Word to PDF page."],
+      ["Why does layout quality depend on the backend?", "Word files need a document engine such as LibreOffice or Microsoft Word to preserve layout accurately."],
+    ],
+  },
+  [P.PDF]: {
+    intro: "Convert PDF files into editable DOCX documents for Word and compatible editors.",
+    steps: ["Upload your PDF file.", "Convert the PDF into a DOCX document.", "Download and edit the Word file."],
+    faqs: [
+      ["Can every PDF become a perfect Word document?", "No. PDF to Word quality depends on how the PDF was created, fonts, layout complexity and whether the PDF is scanned."],
+      ["Do scanned PDFs need OCR?", "Yes. Scanned image-only PDFs need OCR before text can become editable."],
+    ],
+  },
+  [P.PDF_WORD]: {
+    intro: "Create editable Word files from PDF documents.",
+    steps: ["Select a PDF.", "Run conversion.", "Download the DOCX file."],
+    faqs: [
+      ["Is the output editable?", "Text-based PDFs usually produce editable DOCX content. Scanned PDFs need OCR."],
+      ["Does it keep images?", "Images are preserved when the conversion engine can extract them from the PDF."],
+    ],
+  },
+  [P.IMG]: {
+    intro: "Combine images into a single PDF for forms, receipts, notes and photo documents.",
+    steps: ["Upload JPG, PNG, WebP or other images.", "FileFlow places the images into a PDF.", "Download the combined PDF."],
+    faqs: [
+      ["Can I convert multiple images to one PDF?", "Yes. Upload multiple images and FileFlow combines them into one PDF."],
+      ["Are images uploaded to a server?", "Image to PDF runs in the browser."],
+    ],
+  },
+  [P.MERGE]: {
+    intro: "Merge several PDF files into one organized PDF document.",
+    steps: ["Upload two or more PDFs.", "Click Convert and Download.", "Save the merged PDF."],
+    faqs: [
+      ["Can I merge PDFs for free?", "Yes. FileFlow can merge PDFs directly in the browser."],
+      ["Are merged PDFs uploaded?", "The merge tool runs locally in the browser."],
+    ],
+  },
+  [P.SPLIT]: {
+    intro: "Split a PDF into all pages, selected page numbers or custom ranges.",
+    steps: ["Upload a PDF.", "Choose all pages, page numbers or ranges.", "Download the split PDF files."],
+    faqs: [
+      ["Can I split only selected pages?", "Yes. Enter page numbers or ranges such as 1-6, 8-9."],
+      ["Can I create one combined PDF?", "Yes. Choose the combined output option for selected pages."],
+    ],
+  },
+  [P.COMPRESS]: {
+    intro: "Reduce PDF size by rewriting and optimizing the PDF structure.",
+    steps: ["Upload a PDF.", "Adjust the compression range.", "Download the optimized PDF."],
+    faqs: [
+      ["Does compression change page content?", "FileFlow keeps pages intact while optimizing PDF structure."],
+      ["Why are some PDFs not much smaller?", "Deep image recompression needs a production PDF engine; some already optimized PDFs cannot shrink much."],
+    ],
+  },
+  [P.EDITOR]: {
+    intro: "Edit PDFs by adding pages, text and images, then export a new PDF.",
+    steps: ["Upload a PDF.", "Add text, images, blank pages or pages from another PDF.", "Download the edited PDF."],
+    faqs: [
+      ["Can I add images to a PDF?", "Yes. Select a page, add an image, drag it into place and resize it."],
+      ["Can I insert pages from another PDF?", "Yes. Upload another PDF on the right side, select a page and insert it with the plus button."],
+    ],
+  },
+  [P.PDF_TO_JPG]: {
+    intro: "Export PDF pages as high-quality JPG images.",
+    steps: ["Upload a PDF.", "FileFlow renders each page.", "Download JPG images for each page."],
+    faqs: [
+      ["Does PDF to JPG run in the browser?", "Yes. PDF pages are rendered locally in the browser."],
+      ["Will each page become a separate image?", "Yes. Each PDF page downloads as its own JPG file."],
+    ],
+  },
+  [P.JPG_TO_PDF]: {
+    intro: "Convert JPG and JPEG images into a clean PDF document.",
+    steps: ["Upload JPG images.", "Convert them into a PDF.", "Download the PDF file."],
+    faqs: [
+      ["Can I convert several JPGs at once?", "Yes. Multiple JPG files can be combined into one PDF."],
+      ["Does JPG to PDF need a backend?", "No. It runs in the browser."],
+    ],
+  },
+  [P.PNG_TO_PDF]: {
+    intro: "Convert PNG images into a shareable PDF file.",
+    steps: ["Upload PNG images.", "Create the PDF.", "Download the result."],
+    faqs: [
+      ["Can transparent PNG files be converted?", "Yes. PNG files can be placed into a PDF."],
+      ["Is PNG to PDF free?", "Yes. This browser tool is free to use."],
+    ],
+  },
+};
+
+function pageUrl(page) {
+  return `${SITE_URL}${PAGE_PATH[page] || "/"}`;
+}
+
+function schemaScript(id, data) {
+  let script = document.getElementById(id);
+  if (!script) {
+    script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = id;
+    document.head.appendChild(script);
+  }
+  script.textContent = JSON.stringify(data);
+}
+
+function buildSchemas(page) {
+  const seo = SEO[page] || SEO[P.HOME];
+  const label = PAGE_LABEL[page] || "FileFlow";
+  const toolSeo = TOOL_SEO[page];
+  const schemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      name: label === "Home" ? "FileFlow" : `${label} - FileFlow`,
+      url: pageUrl(page),
+      applicationCategory: "UtilitiesApplication",
+      operatingSystem: "Any",
+      description: seo.description,
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    },
+  ];
+  if (page !== P.HOME) {
+    schemas.push({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: pageUrl(P.HOME) },
+        { "@type": "ListItem", position: 2, name: label, item: pageUrl(page) },
+      ],
+    });
+  }
+  if (toolSeo?.steps?.length) {
+    schemas.push({
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      name: `How to use ${label}`,
+      description: toolSeo.intro,
+      step: toolSeo.steps.map((text, index) => ({ "@type": "HowToStep", position: index + 1, text })),
+    });
+  }
+  if (toolSeo?.faqs?.length || page === P.FAQ) {
+    const faqs = toolSeo?.faqs || FAQ_DATA.map(({ q, a }) => [q, a]);
+    schemas.push({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faqs.map(([q, a]) => ({
+        "@type": "Question",
+        name: q,
+        acceptedAnswer: { "@type": "Answer", text: a },
+      })),
+    });
+  }
+  return schemas;
+}
+
 function useNav() {
   const getPage = useCallback(() => PATH_PAGE[window.location.pathname] || P.HOME, []);
   const [page, setPage] = useState(getPage);
@@ -700,6 +867,7 @@ function useNav() {
       document.head.appendChild(description);
     }
     description.setAttribute("content", seo.description);
+    schemaScript("ff-jsonld", buildSchemas(page));
   }, [page]);
 
   return { page, go };
@@ -831,7 +999,36 @@ function FileRow({ file, meta, onRemove, status }) {
   );
 }
 
-function ConverterPage({ meta }) {
+function ToolSeoSection({ page, accent }) {
+  const content = TOOL_SEO[page];
+  if (!content) return null;
+  return (
+    <section style={{ marginTop: 46, display: "grid", gap: 16 }}>
+      <div style={{ background: T.color.surface, border: `1px solid ${T.color.border}`, borderRadius: T.radius.md, padding: 20 }}>
+        <h2 style={{ fontFamily: T.font.display, fontWeight: 700, fontSize: 24, color: T.color.dark, margin: "0 0 8px" }}>How to use {PAGE_LABEL[page]}</h2>
+        <p style={{ fontFamily: T.font.body, fontSize: 14, color: T.color.mid, lineHeight: 1.7, margin: "0 0 16px" }}>{content.intro}</p>
+        <ol style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 8 }}>
+          {content.steps.map(step => (
+            <li key={step} style={{ fontFamily: T.font.body, fontSize: 14, color: T.color.mid, lineHeight: 1.55 }}>{step}</li>
+          ))}
+        </ol>
+      </div>
+      <div style={{ background: T.color.surface, border: `1px solid ${T.color.border}`, borderRadius: T.radius.md, padding: 20 }}>
+        <h2 style={{ fontFamily: T.font.display, fontWeight: 700, fontSize: 23, color: T.color.dark, margin: "0 0 14px" }}>{PAGE_LABEL[page]} FAQ</h2>
+        <div style={{ display: "grid", gap: 12 }}>
+          {content.faqs.map(([q, a]) => (
+            <div key={q} style={{ borderLeft: `3px solid ${accent}`, paddingLeft: 12 }}>
+              <h3 style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 14.5, color: T.color.dark, margin: "0 0 4px" }}>{q}</h3>
+              <p style={{ fontFamily: T.font.body, fontSize: 13.5, color: T.color.mid, lineHeight: 1.65, margin: 0 }}>{a}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ConverterPage({ meta, page }) {
   const [files, setFiles] = useState([]);
   const [status, setStatus] = useState("idle"); // idle | converting | done | error
   const [progress, setProgress] = useState(0);
@@ -966,6 +1163,7 @@ function ConverterPage({ meta }) {
           ))}
         </div>
       </div>
+      <ToolSeoSection page={page} accent={meta.accent} />
     </div>
   );
 }
@@ -1100,6 +1298,7 @@ function SplitPdfPage() {
           </button>
         </div>
       )}
+      <ToolSeoSection page={P.SPLIT} accent={meta.accent} />
     </div>
   );
 }
@@ -1243,6 +1442,7 @@ function CompressPdfPage() {
           </button>
         </div>
       )}
+      <ToolSeoSection page={P.COMPRESS} accent={meta.accent} />
     </div>
   );
 }
@@ -1590,6 +1790,7 @@ function PdfEditorPage() {
         <DropZone meta={meta} onFiles={files => loadMainPdf(files[0])} />
         {status === "loading" && <p style={{ textAlign: "center", fontFamily: T.font.body, color: meta.accent, marginTop: 18 }}>Loading PDF... {progress}%</p>}
         {errMsg && <p style={{ textAlign: "center", fontFamily: T.font.body, color: "#DC2626", marginTop: 18 }}>{errMsg}</p>}
+        <ToolSeoSection page={P.EDITOR} accent={meta.accent} />
       </div>
     );
   }
@@ -1749,6 +1950,9 @@ function PdfEditorPage() {
             </div>
           )}
         </aside>
+      </div>
+      <div style={{ maxWidth: 920, margin: "0 auto" }}>
+        <ToolSeoSection page={P.EDITOR} accent={meta.accent} />
       </div>
     </div>
   );
@@ -2076,7 +2280,7 @@ export default function App() {
     if (page === P.SPLIT) return <SplitPdfPage />;
     if (page === P.COMPRESS) return <CompressPdfPage />;
     if (page === P.EDITOR) return <PdfEditorPage />;
-    if (META[page]) return <ConverterPage meta={META[page]} />;
+    if (META[page]) return <ConverterPage meta={META[page]} page={page} />;
     return <HomePage go={go} />;
   };
   return (
