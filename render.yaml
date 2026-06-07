@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: fileflow-backend
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: FILEFLOW_MAX_UPLOAD_MB
+        value: "100"
+      - key: FILEFLOW_ALLOW_VERCEL_PREVIEWS
+        value: "true"
+      - key: FILEFLOW_ALLOWED_ORIGINS
+        sync: false
