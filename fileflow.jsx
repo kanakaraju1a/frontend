@@ -489,55 +489,55 @@ const PAGE_LABEL = {
 const SEO = {
   [P.HOME]: {
     title: "FileFlow - Free PDF, Document and Image Converter",
-    description: "FileFlow is a free local file converter for PDF to DOCX, DOCX to PDF and image to PDF conversion.",
+    description: "Free online file converter for PDF to DOCX, Word to PDF, image to PDF, merge PDF, split PDF, compress PDF and PDF editing tools.",
   },
   [P.DOC]: {
     title: "DOC to PDF Converter - Convert Word to PDF Free | FileFlow",
-    description: "Convert DOC, DOCX, RTF, ODT and TXT files to PDF with high-fidelity Microsoft Word export in FileFlow.",
+    description: "Convert DOC, DOCX, RTF, ODT and TXT documents to PDF with FileFlow. Free Word to PDF conversion with clean pages and direct download.",
   },
   [P.WORD_PDF]: {
     title: "Word to PDF Converter - Convert DOCX to PDF | FileFlow",
-    description: "Convert Word DOC and DOCX files to PDF with FileFlow.",
+    description: "Convert Word DOC and DOCX files to PDF online with FileFlow. Upload a Word document, create a PDF and download the finished file.",
   },
   [P.PDF]: {
     title: "PDF to DOC Converter - Convert PDF to Word Free | FileFlow",
-    description: "Convert PDF to editable DOCX Word documents using FileFlow's local PDF to Word converter.",
+    description: "Convert PDF to editable DOCX Word documents with FileFlow. Use the PDF to DOC converter for text-based PDFs, reports and documents.",
   },
   [P.PDF_WORD]: {
     title: "PDF to Word Converter - Convert PDF to DOCX | FileFlow",
-    description: "Convert PDF files to editable Word DOCX documents with FileFlow.",
+    description: "Convert PDF files to editable Word DOCX documents with FileFlow. Open the direct PDF to Word page and download a Word file.",
   },
   [P.IMG]: {
     title: "Image to PDF Converter - JPG, PNG, WebP to PDF | FileFlow",
-    description: "Convert JPG, PNG, WebP, GIF, BMP and TIFF images into clean PDF files with FileFlow.",
+    description: "Convert JPG, PNG, WebP, GIF, BMP and TIFF images into a single PDF document with FileFlow. Free image to PDF conversion.",
   },
   [P.PDF_TO_JPG]: {
     title: "PDF to JPG Converter - Convert PDF Pages to Images | FileFlow",
-    description: "Convert each PDF page into a high-quality JPG image with FileFlow.",
+    description: "Convert each PDF page into a high-quality JPG image with FileFlow. Free PDF to JPG converter for documents and scanned pages.",
   },
   [P.JPG_TO_PDF]: {
     title: "JPG to PDF Converter - Convert JPG Images to PDF | FileFlow",
-    description: "Convert JPG and JPEG images into a clean PDF document with FileFlow.",
+    description: "Convert JPG and JPEG images into a PDF document with FileFlow. Upload photos or scans and download a clean PDF file.",
   },
   [P.PNG_TO_PDF]: {
     title: "PNG to PDF Converter - Convert PNG Images to PDF | FileFlow",
-    description: "Convert PNG images into a clean PDF document with FileFlow.",
+    description: "Convert PNG images into a shareable PDF file with FileFlow. Free PNG to PDF conversion for screenshots, forms and documents.",
   },
   [P.MERGE]: {
     title: "Merge PDF - Combine PDF Files Online | FileFlow",
-    description: "Merge multiple PDF files into one PDF document with FileFlow.",
+    description: "Merge multiple PDF files into one PDF document with FileFlow. Combine PDF pages and download a single organized file.",
   },
   [P.SPLIT]: {
-    title: "Split PDF - Extract PDF Pages | FileFlow",
-    description: "Split a PDF into separate page files with FileFlow.",
+    title: "Split PDF - Extract PDF Pages and Ranges | FileFlow",
+    description: "Split a PDF into all pages, selected page numbers or custom ranges like 1-6 and 8-9 with FileFlow.",
   },
   [P.COMPRESS]: {
     title: "Compress PDF - Reduce PDF File Size | FileFlow",
-    description: "Optimize and rewrite PDF files for smaller downloads with FileFlow.",
+    description: "Compress PDF files with FileFlow using an adjustable compression range. Reduce PDF size and download an optimized file.",
   },
   [P.EDITOR]: {
     title: "PDF Editor - Add Pages, Images and Text | FileFlow",
-    description: "Edit PDF pages in FileFlow with page thumbnails, add pages from another PDF, upload images, drag content and download a new PDF.",
+    description: "Edit PDF pages with FileFlow. Add pages from another PDF, upload images, drag text, resize content and export a new PDF.",
   },
   [P.OCR]: {
     title: "OCR PDF - Convert Scanned PDF to Text | FileFlow",
@@ -545,11 +545,11 @@ const SEO = {
   },
   [P.FAQ]: {
     title: "FileFlow FAQ - File Conversion Help",
-    description: "Answers about FileFlow PDF, Word and image conversion, privacy, file support and local processing.",
+    description: "Answers about FileFlow PDF, Word and image conversion, privacy, file support, backend setup and conversion quality.",
   },
   [P.ABOUT]: {
     title: "About FileFlow - Built by Kanaka Raju",
-    description: "Learn about FileFlow, a file conversion tool developed by Kanaka Raju, Full stack developer.",
+    description: "Learn about FileFlow, a PDF, document and image conversion tool developed by Kanaka Raju, Full stack developer.",
   },
   [P.CONTACT]: {
     title: "Contact FileFlow - Support and Developer Information",
@@ -557,7 +557,7 @@ const SEO = {
   },
   [P.PRIVACY]: {
     title: "Privacy Policy - FileFlow",
-    description: "Read FileFlow's privacy policy for file conversion, local processing and contact information.",
+    description: "Read FileFlow privacy details for browser-based conversion, backend processing, temporary files and contact information.",
   },
   [P.TERMS]: {
     title: "Terms of Service - FileFlow",
@@ -565,15 +565,15 @@ const SEO = {
   },
   [P.SECURITY]: {
     title: "Security - FileFlow",
-    description: "Learn how FileFlow handles conversion security, temporary files and local converter services.",
+    description: "Learn how FileFlow handles file conversion security, temporary files, upload limits, HTTPS and converter services.",
   },
   [P.FORMATS]: {
     title: "Supported File Formats - FileFlow",
-    description: "See FileFlow supported formats for PDF, Word, document and image conversion tools.",
+    description: "See FileFlow supported formats for PDF, Word, DOCX, DOC, ODT, RTF, TXT, JPG, PNG, WebP and image conversion tools.",
   },
   [P.QUALITY]: {
     title: "Conversion Quality - FileFlow",
-    description: "Understand FileFlow conversion quality, layout preservation and limitations for PDF and Word files.",
+    description: "Understand FileFlow conversion quality, layout preservation, fonts, images, scanned PDFs and PDF to Word limitations.",
   },
 };
 
@@ -699,7 +699,7 @@ const FAQ_DATA = [
 
 const TOOL_SEO = {
   [P.DOC]: {
-    intro: "Convert Word and document files into clean PDFs for sharing, printing and archiving.",
+    intro: "Convert Word and document files into clean PDFs for sharing, printing and archiving. This page supports DOC, DOCX, RTF, ODT and TXT workflows so people searching for document to PDF, Word to PDF or DOCX to PDF can open the right converter directly.",
     steps: ["Upload a DOC, DOCX, RTF, ODT or TXT file.", "Click Convert and wait for FileFlow to process the document.", "Download the finished PDF and review the layout."],
     faqs: [
       ["Can I convert DOCX to PDF online?", "Yes. Upload a DOCX file and FileFlow converts it to PDF using the configured backend converter."],
@@ -708,7 +708,7 @@ const TOOL_SEO = {
     ],
   },
   [P.WORD_PDF]: {
-    intro: "Turn Word documents into PDFs that are easier to share and print.",
+    intro: "Turn Word documents into PDFs that are easier to share and print. Use this direct Word to PDF converter page when you need a DOC or DOCX file saved as a portable PDF.",
     steps: ["Choose a DOC or DOCX file.", "Run the Word to PDF converter.", "Download the PDF output."],
     faqs: [
       ["What Word formats are supported?", "DOC and DOCX files are supported on the Word to PDF page."],
@@ -716,7 +716,7 @@ const TOOL_SEO = {
     ],
   },
   [P.PDF]: {
-    intro: "Convert PDF files into editable DOCX documents for Word and compatible editors.",
+    intro: "Convert PDF files into editable DOCX documents for Word and compatible editors. This direct PDF to DOC converter page is built for users who need to edit PDF content in a Word document.",
     steps: ["Upload your PDF file.", "Convert the PDF into a DOCX document.", "Download and edit the Word file."],
     faqs: [
       ["Can every PDF become a perfect Word document?", "No. PDF to Word quality depends on how the PDF was created, fonts, layout complexity and whether the PDF is scanned."],
@@ -724,7 +724,7 @@ const TOOL_SEO = {
     ],
   },
   [P.PDF_WORD]: {
-    intro: "Create editable Word files from PDF documents.",
+    intro: "Create editable Word files from PDF documents. Use PDF to Word when you need a DOCX output from a PDF file for editing, review or reuse.",
     steps: ["Select a PDF.", "Run conversion.", "Download the DOCX file."],
     faqs: [
       ["Is the output editable?", "Text-based PDFs usually produce editable DOCX content. Scanned PDFs need OCR."],
@@ -732,7 +732,7 @@ const TOOL_SEO = {
     ],
   },
   [P.IMG]: {
-    intro: "Combine images into a single PDF for forms, receipts, notes and photo documents.",
+    intro: "Combine images into a single PDF for forms, receipts, notes and photo documents. JPG, PNG, WebP, GIF, BMP and TIFF images can be arranged into one PDF file.",
     steps: ["Upload JPG, PNG, WebP or other images.", "FileFlow places the images into a PDF.", "Download the combined PDF."],
     faqs: [
       ["Can I convert multiple images to one PDF?", "Yes. Upload multiple images and FileFlow combines them into one PDF."],
@@ -740,7 +740,7 @@ const TOOL_SEO = {
     ],
   },
   [P.MERGE]: {
-    intro: "Merge several PDF files into one organized PDF document.",
+    intro: "Merge several PDF files into one organized PDF document. This page helps users combine contracts, scanned pages, reports and attachments into a single PDF.",
     steps: ["Upload two or more PDFs.", "Click Convert and Download.", "Save the merged PDF."],
     faqs: [
       ["Can I merge PDFs for free?", "Yes. FileFlow can merge PDFs directly in the browser."],
@@ -748,7 +748,7 @@ const TOOL_SEO = {
     ],
   },
   [P.SPLIT]: {
-    intro: "Split a PDF into all pages, selected page numbers or custom ranges.",
+    intro: "Split a PDF into all pages, selected page numbers or custom ranges. Use the split PDF tool to extract one page, several pages or ranges such as 1-6, 8-9.",
     steps: ["Upload a PDF.", "Choose all pages, page numbers or ranges.", "Download the split PDF files."],
     faqs: [
       ["Can I split only selected pages?", "Yes. Enter page numbers or ranges such as 1-6, 8-9."],
@@ -756,7 +756,7 @@ const TOOL_SEO = {
     ],
   },
   [P.COMPRESS]: {
-    intro: "Reduce PDF size by rewriting and optimizing the PDF structure.",
+    intro: "Reduce PDF size by rewriting and optimizing the PDF structure. The compression range lets users increase or decrease optimization strength before downloading a smaller PDF.",
     steps: ["Upload a PDF.", "Adjust the compression range.", "Download the optimized PDF."],
     faqs: [
       ["Does compression change page content?", "FileFlow keeps pages intact while optimizing PDF structure."],
@@ -764,7 +764,7 @@ const TOOL_SEO = {
     ],
   },
   [P.EDITOR]: {
-    intro: "Edit PDFs by adding pages, text and images, then export a new PDF.",
+    intro: "Edit PDFs by adding pages, text and images, then export a new PDF. The editor supports page thumbnails, blank pages, imported pages from another PDF and draggable content.",
     steps: ["Upload a PDF.", "Add text, images, blank pages or pages from another PDF.", "Download the edited PDF."],
     faqs: [
       ["Can I add images to a PDF?", "Yes. Select a page, add an image, drag it into place and resize it."],
@@ -772,7 +772,7 @@ const TOOL_SEO = {
     ],
   },
   [P.PDF_TO_JPG]: {
-    intro: "Export PDF pages as high-quality JPG images.",
+    intro: "Export PDF pages as high-quality JPG images. Use this converter when each page of a PDF needs to become a separate image file.",
     steps: ["Upload a PDF.", "FileFlow renders each page.", "Download JPG images for each page."],
     faqs: [
       ["Does PDF to JPG run in the browser?", "Yes. PDF pages are rendered locally in the browser."],
@@ -780,7 +780,7 @@ const TOOL_SEO = {
     ],
   },
   [P.JPG_TO_PDF]: {
-    intro: "Convert JPG and JPEG images into a clean PDF document.",
+    intro: "Convert JPG and JPEG images into a clean PDF document. This direct JPG to PDF page is useful for photos, scanned forms and image documents.",
     steps: ["Upload JPG images.", "Convert them into a PDF.", "Download the PDF file."],
     faqs: [
       ["Can I convert several JPGs at once?", "Yes. Multiple JPG files can be combined into one PDF."],
@@ -788,7 +788,7 @@ const TOOL_SEO = {
     ],
   },
   [P.PNG_TO_PDF]: {
-    intro: "Convert PNG images into a shareable PDF file.",
+    intro: "Convert PNG images into a shareable PDF file. Use PNG to PDF for screenshots, transparent images, forms and other PNG documents.",
     steps: ["Upload PNG images.", "Create the PDF.", "Download the result."],
     faqs: [
       ["Can transparent PNG files be converted?", "Yes. PNG files can be placed into a PDF."],
@@ -799,6 +799,26 @@ const TOOL_SEO = {
 
 function pageUrl(page) {
   return `${SITE_URL}${PAGE_PATH[page] || "/"}`;
+}
+
+function ensureMeta(selector, create) {
+  let element = document.querySelector(selector);
+  if (!element) {
+    element = document.createElement("meta");
+    create(element);
+    document.head.appendChild(element);
+  }
+  return element;
+}
+
+function ensureCanonical() {
+  let link = document.querySelector('link[rel="canonical"]');
+  if (!link) {
+    link = document.createElement("link");
+    link.rel = "canonical";
+    document.head.appendChild(link);
+  }
+  return link;
 }
 
 function schemaScript(id, data) {
@@ -819,6 +839,24 @@ function buildSchemas(page) {
   const schemas = [
     {
       "@context": "https://schema.org",
+      "@type": "Organization",
+      name: "FileFlow",
+      url: SITE_URL,
+      logo: `${SITE_URL}/favicon.svg`,
+      contactPoint: {
+        "@type": "ContactPoint",
+        email: "enjoytech8@gmail.com",
+        contactType: "customer support",
+      },
+      founder: {
+        "@type": "Person",
+        name: "Kanaka Raju",
+        jobTitle: "Full stack developer",
+        sameAs: "https://www.linkedin.com/in/kanakaraju9390/",
+      },
+    },
+    {
+      "@context": "https://schema.org",
       "@type": "WebApplication",
       name: label === "Home" ? "FileFlow" : `${label} - FileFlow`,
       url: pageUrl(page),
@@ -828,6 +866,19 @@ function buildSchemas(page) {
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
     },
   ];
+  if (page === P.HOME) {
+    schemas.push({
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "FileFlow file conversion tools",
+      itemListElement: TOOLS.map((tool, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: tool.label,
+        url: pageUrl(tool.page),
+      })),
+    });
+  }
   if (page !== P.HOME) {
     schemas.push({
       "@context": "https://schema.org",
@@ -880,18 +931,46 @@ function useNav() {
 
   useEffect(() => {
     const seo = SEO[page] || SEO[P.HOME];
+    const url = pageUrl(page);
     document.title = seo.title;
-    let description = document.querySelector('meta[name="description"]');
-    if (!description) {
-      description = document.createElement("meta");
-      description.setAttribute("name", "description");
-      document.head.appendChild(description);
-    }
+    const description = ensureMeta('meta[name="description"]', element => element.setAttribute("name", "description"));
+    const ogTitle = ensureMeta('meta[property="og:title"]', element => element.setAttribute("property", "og:title"));
+    const ogDescription = ensureMeta('meta[property="og:description"]', element => element.setAttribute("property", "og:description"));
+    const ogUrl = ensureMeta('meta[property="og:url"]', element => element.setAttribute("property", "og:url"));
+    const twitterCard = ensureMeta('meta[name="twitter:card"]', element => element.setAttribute("name", "twitter:card"));
+    const twitterTitle = ensureMeta('meta[name="twitter:title"]', element => element.setAttribute("name", "twitter:title"));
+    const twitterDescription = ensureMeta('meta[name="twitter:description"]', element => element.setAttribute("name", "twitter:description"));
     description.setAttribute("content", seo.description);
+    ensureCanonical().href = url;
+    ogTitle.setAttribute("content", seo.title);
+    ogDescription.setAttribute("content", seo.description);
+    ogUrl.setAttribute("content", url);
+    twitterCard.setAttribute("content", "summary");
+    twitterTitle.setAttribute("content", seo.title);
+    twitterDescription.setAttribute("content", seo.description);
     schemaScript("ff-jsonld", buildSchemas(page));
   }, [page]);
 
   return { page, go };
+}
+
+function PageLink({ page, go, children, style, className, onClick, ...props }) {
+  return (
+    <a
+      href={PAGE_PATH[page] || "/"}
+      className={className}
+      onClick={event => {
+        if (onClick) onClick(event);
+        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        go(page);
+      }}
+      style={{ textDecoration: "none", ...style }}
+      {...props}
+    >
+      {children}
+    </a>
+  );
 }
 
 function Header({ page, go }) {
@@ -921,19 +1000,19 @@ function Header({ page, go }) {
   return (
     <header style={{ position: "sticky", top: 0, zIndex: 200, background: "rgba(245,244,240,0.94)", backdropFilter: "blur(14px)", borderBottom: `1px solid ${T.color.border}` }}>
       <div style={{ maxWidth: 1080, margin: "0 auto", padding: "0 20px", height: 62, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div onClick={() => go(P.HOME)} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+        <PageLink page={P.HOME} go={go} aria-label="FileFlow home" style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
           <div style={{ width: 32, height: 32, borderRadius: 9, background: T.color.dark, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Zap size={17} color="#fff" strokeWidth={2.5} />
           </div>
           <span style={{ fontFamily: T.font.display, fontWeight: 700, fontSize: 22, color: T.color.dark, letterSpacing: "-0.3px" }}>FileFlow</span>
-        </div>
+        </PageLink>
         <nav style={{ display: "flex", gap: 2, alignItems: "center", justifyContent: "flex-end", flexWrap: "wrap" }} className="ff-desk-nav">
           {navLinks.map(({ label, p }) => (
-            <button key={p} onClick={() => go(p)} style={{
+            <PageLink key={p} page={p} go={go} style={{
               background: page === p ? T.color.dark : "none", color: page === p ? "#fff" : T.color.mid,
-              border: "none", borderRadius: T.radius.sm, padding: "7px 9px",
+              border: "none", borderRadius: T.radius.sm, padding: "7px 9px", display: "inline-flex",
               fontFamily: T.font.body, fontWeight: 500, fontSize: 12.5, cursor: "pointer", transition: "all .18s",
-            }}>{label}</button>
+            }}>{label}</PageLink>
           ))}
         </nav>
         <button onClick={() => setOpen(!open)} className="ff-ham" style={{ display: "none", background: "none", border: "none", cursor: "pointer", padding: 4 }}>
@@ -943,12 +1022,12 @@ function Header({ page, go }) {
       {open && (
         <div className="ff-mob-menu" style={{ background: T.color.surface, borderTop: `1px solid ${T.color.border}`, padding: "10px 20px 16px", maxHeight: "calc(100vh - 62px)", overflowY: "auto" }}>
           {mobileLinks.map(({ label, p, Icon: Ic }) => (
-            <button key={p} onClick={() => { go(p); setOpen(false); }} style={{
+            <PageLink key={p} page={p} go={go} onClick={() => setOpen(false)} style={{
               display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left",
               background: page === p ? "#F0F0F0" : "none", border: "none", borderRadius: T.radius.sm,
               padding: "11px 12px", fontFamily: T.font.body, fontWeight: page === p ? 600 : 400,
               fontSize: 15, color: T.color.dark, cursor: "pointer", marginBottom: 2,
-            }}><Ic size={16} color={T.color.mid} />{label}</button>
+            }}><Ic size={16} color={T.color.mid} />{label}</PageLink>
           ))}
         </div>
       )}
@@ -961,7 +1040,7 @@ function Crumb({ page, go }) {
   return (
     <div style={{ borderBottom: `1px solid ${T.color.border}`, background: T.color.surface, padding: "9px 20px" }}>
       <div style={{ maxWidth: 1080, margin: "0 auto", display: "flex", alignItems: "center", gap: 6 }}>
-        <button onClick={() => go(P.HOME)} style={{ background: "none", border: "none", fontFamily: T.font.body, fontSize: 12.5, color: T.color.muted, cursor: "pointer", padding: 0 }}>Home</button>
+        <PageLink page={P.HOME} go={go} style={{ background: "none", border: "none", fontFamily: T.font.body, fontSize: 12.5, color: T.color.muted, cursor: "pointer", padding: 0 }}>Home</PageLink>
         <ChevronRight size={13} color={T.color.muted} />
         <span style={{ fontFamily: T.font.body, fontSize: 12.5, color: T.color.mid, fontWeight: 500 }}>{META[page]?.title || PAGE_LABEL[page] || "Page"}</span>
       </div>
@@ -2018,12 +2097,12 @@ function HomePage({ go }) {
             Convert documents, PDFs and images with focused tools for Word, PDF and image workflows. No signup, no watermarks.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <button onClick={() => go(P.DOC)} style={{ display: "flex", alignItems: "center", gap: 8, background: "#2563EB", color: "#fff", border: "none", borderRadius: T.radius.md, padding: "13px 26px", fontFamily: T.font.body, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
+            <PageLink page={P.DOC} go={go} style={{ display: "flex", alignItems: "center", gap: 8, background: "#2563EB", color: "#fff", border: "none", borderRadius: T.radius.md, padding: "13px 26px", fontFamily: T.font.body, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
               <FileText size={16} /> Doc to PDF
-            </button>
-            <button onClick={() => go(P.PDF)} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.15)", borderRadius: T.radius.md, padding: "13px 26px", fontFamily: T.font.body, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
+            </PageLink>
+            <PageLink page={P.PDF} go={go} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.15)", borderRadius: T.radius.md, padding: "13px 26px", fontFamily: T.font.body, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
               <FileOutput size={16} /> PDF to Doc
-            </button>
+            </PageLink>
           </div>
         </div>
       </div>
@@ -2035,7 +2114,7 @@ function HomePage({ go }) {
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(270px,1fr))", gap: 18 }}>
           {TOOLS.map(({ page, Icon: Ic, label, desc, accent }) => (
-            <div key={page} onClick={() => go(page)}
+            <PageLink key={page} page={page} go={go}
               style={{ background: T.color.surface, borderRadius: T.radius.lg, padding: "32px 26px", border: `1.5px solid ${T.color.border}`, cursor: "pointer", transition: "all .2s" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = accent; e.currentTarget.style.boxShadow = `0 8px 28px ${accent}18`; e.currentTarget.style.transform = "translateY(-3px)"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = T.color.border; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}
@@ -2048,7 +2127,7 @@ function HomePage({ go }) {
               <div style={{ display: "inline-flex", alignItems: "center", gap: 6, color: accent, fontFamily: T.font.body, fontWeight: 600, fontSize: 13 }}>
                 Convert now <ArrowRight size={13} />
               </div>
-            </div>
+            </PageLink>
           ))}
         </div>
       </div>
@@ -2069,6 +2148,30 @@ function HomePage({ go }) {
           ))}
         </div>
       </div>
+
+      <section style={{ maxWidth: 1080, margin: "0 auto", padding: "54px 16px 0" }}>
+        <div style={{ textAlign: "center", maxWidth: 720, margin: "0 auto 30px" }}>
+          <h2 style={{ fontFamily: T.font.display, fontWeight: 700, fontSize: "clamp(22px,4vw,34px)", color: T.color.dark, margin: "0 0 10px" }}>Popular FileFlow Converters</h2>
+          <p style={{ fontFamily: T.font.body, fontSize: 14.5, color: T.color.mid, lineHeight: 1.7, margin: 0 }}>
+            Open the exact converter page from search results: PDF to DOC, Word to PDF, merge PDF, split PDF, compress PDF, PDF editor, PDF to JPG, JPG to PDF and PNG to PDF.
+          </p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 14 }}>
+          {[
+            [P.PDF, "PDF to DOC converter", "Create editable Word DOCX files from PDF documents."],
+            [P.DOC, "DOC to PDF converter", "Convert DOC, DOCX, RTF, ODT and TXT files to PDF."],
+            [P.MERGE, "Merge PDF files", "Combine multiple PDFs into one organized document."],
+            [P.SPLIT, "Split PDF pages", "Extract all pages, selected pages or custom ranges."],
+            [P.COMPRESS, "Compress PDF online", "Reduce PDF file size with adjustable compression strength."],
+            [P.EDITOR, "PDF editor", "Add pages, text and images, then export a new PDF."],
+          ].map(([toolPage, title, text]) => (
+            <PageLink key={toolPage} page={toolPage} go={go} style={{ background: T.color.surface, border: `1px solid ${T.color.border}`, borderRadius: T.radius.md, padding: "18px 18px 17px", display: "block" }}>
+              <h3 style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 15, color: T.color.dark, margin: "0 0 7px" }}>{title}</h3>
+              <p style={{ fontFamily: T.font.body, fontSize: 13, color: T.color.mid, lineHeight: 1.6, margin: 0 }}>{text}</p>
+            </PageLink>
+          ))}
+        </div>
+      </section>
 
       <div style={{ maxWidth: 1080, margin: "0 auto", padding: "56px 16px 72px" }}>
         <h2 style={{ fontFamily: T.font.display, fontWeight: 700, fontSize: "clamp(22px,4vw,34px)", color: T.color.dark, textAlign: "center", margin: "0 0 36px", letterSpacing: "-0.5px" }}>Why FileFlow?</h2>
@@ -2294,13 +2397,13 @@ function Footer({ go }) {
           <div>
             <p style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 11, color: "rgba(255,255,255,0.35)", marginBottom: 14, textTransform: "uppercase", letterSpacing: 1.2 }}>Tools</p>
             {[{ l: "Document to PDF", p: P.DOC }, { l: "PDF to Document", p: P.PDF }, { l: "Merge PDF", p: P.MERGE }, { l: "Compress PDF", p: P.COMPRESS }, { l: "PDF Editor", p: P.EDITOR }, { l: "PDF to JPG", p: P.PDF_TO_JPG }].map(({ l, p }) => (
-              <p key={p} onClick={() => go(p)} style={{ fontFamily: T.font.body, fontSize: 13.5, color: "rgba(255,255,255,0.45)", margin: "0 0 10px", cursor: "pointer" }}>{l}</p>
+              <PageLink key={p} page={p} go={go} style={{ display: "block", fontFamily: T.font.body, fontSize: 13.5, color: "rgba(255,255,255,0.45)", margin: "0 0 10px", cursor: "pointer" }}>{l}</PageLink>
             ))}
           </div>
           <div>
             <p style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 11, color: "rgba(255,255,255,0.35)", marginBottom: 14, textTransform: "uppercase", letterSpacing: 1.2 }}>Support</p>
-            {[{ l: "FAQ", p: P.FAQ }, { l: "About", p: P.ABOUT }, { l: "Contact", p: P.CONTACT }, { l: "Privacy", p: P.PRIVACY }, { l: "Terms", p: P.TERMS }, { l: "Security", p: P.SECURITY }].map(({ l, p }) => (
-              <p key={l} onClick={() => go(p)} style={{ fontFamily: T.font.body, fontSize: 13.5, color: "rgba(255,255,255,0.45)", margin: "0 0 10px", cursor: "pointer" }}>{l}</p>
+            {[{ l: "FAQ", p: P.FAQ }, { l: "About", p: P.ABOUT }, { l: "Contact", p: P.CONTACT }, { l: "Privacy", p: P.PRIVACY }, { l: "Terms", p: P.TERMS }, { l: "Security", p: P.SECURITY }, { l: "Supported Formats", p: P.FORMATS }, { l: "Conversion Quality", p: P.QUALITY }].map(({ l, p }) => (
+              <PageLink key={l} page={p} go={go} style={{ display: "block", fontFamily: T.font.body, fontSize: 13.5, color: "rgba(255,255,255,0.45)", margin: "0 0 10px", cursor: "pointer" }}>{l}</PageLink>
             ))}
           </div>
         </div>
