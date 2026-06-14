@@ -5,10 +5,11 @@ import tempfile
 import traceback
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from convert_pdf import convert_pdf_to_docx
 from convert_doc import convert_doc_to_pdf
+from compress_pdf import compress_pdf
 
 HOST = os.environ.get("HOST", "0.0.0.0")
 PORT = int(os.environ.get("PORT", "8765"))
@@ -91,7 +92,9 @@ class Handler(BaseHTTPRequestHandler):
         self.send_error(404)
 
     def do_POST(self):
-        if self.path not in {"/convert", "/convert-doc-pdf"}:
+        parsed_path = urlparse(self.path)
+        route = parsed_path.path
+        if route not in {"/convert", "/convert-doc-pdf", "/compress-pdf"}:
             self.send_error(404)
             return
 
@@ -110,25 +113,35 @@ class Handler(BaseHTTPRequestHandler):
                 tmpdir = Path(tmp)
                 source_name = safe_name(filename)
                 suffix = Path(filename or "").suffix.lower() or ".bin"
-                if self.path == "/convert" and suffix not in PDF_EXTENSIONS:
+                if route == "/convert" and suffix not in PDF_EXTENSIONS:
                     raise ValueError("PDF to Document accepts PDF files only.")
-                if self.path == "/convert-doc-pdf" and suffix not in DOC_EXTENSIONS:
+                if route == "/compress-pdf" and suffix not in PDF_EXTENSIONS:
+                    raise ValueError("Compress PDF accepts PDF files only.")
+                if route == "/convert-doc-pdf" and suffix not in DOC_EXTENSIONS:
                     raise ValueError("Document to PDF accepts DOC, DOCX, RTF, ODT and TXT files only.")
                 input_file = tmpdir / f"input{suffix}"
                 input_file.write_bytes(pdf_bytes)
 
-                if self.path == "/convert":
+                if route == "/convert":
                     output_file = tmpdir / "output.docx"
                     convert_pdf_to_docx(input_file, output_file)
                     result_bytes = output_file.read_bytes()
                     content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     download_name = source_name + ".docx"
-                else:
+                elif route == "/convert-doc-pdf":
                     output_file = tmpdir / "output.pdf"
                     convert_doc_to_pdf(input_file, output_file)
                     result_bytes = output_file.read_bytes()
                     content_type = "application/pdf"
                     download_name = source_name + ".pdf"
+                else:
+                    params = parse_qs(parsed_path.query)
+                    strength = params.get("strength", ["60"])[0]
+                    output_file = tmpdir / "output.pdf"
+                    compress_pdf(input_file, output_file, strength)
+                    result_bytes = output_file.read_bytes()
+                    content_type = "application/pdf"
+                    download_name = source_name + "-compressed.pdf"
 
             self.send_response(200)
             self.send_header("Content-Type", content_type)

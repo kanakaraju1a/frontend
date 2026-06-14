@@ -9,6 +9,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
       libreoffice \
       libreoffice-writer \
+      ghostscript \
       fonts-dejavu \
       fonts-liberation \
       fontconfig \

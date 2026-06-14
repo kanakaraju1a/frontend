@@ -84,6 +84,32 @@ async function postFile(endpoint, file, outputName, onProgress, progressValue) {
   downloadBlob(await response.blob(), outputName);
 }
 
+async function postFileResult(endpoint, file, outputName, onProgress, progressValue) {
+  const formData = new FormData();
+  formData.append("file", file, file.name);
+  onProgress(progressValue);
+
+  const response = await fetch(`${API_BASE}${endpoint}`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    let details = "Start the FileFlow converter server and try again.";
+    try {
+      const payload = await response.json();
+      if (payload?.error) details = payload.error;
+    } catch {
+      // Keep the friendly default.
+    }
+    throw new Error(details);
+  }
+
+  const blob = await response.blob();
+  downloadBlob(blob, outputName);
+  return blob.size;
+}
+
 /* ── Real converters ── */
 async function imagesToPdf(files, onProgress) {
   await ensureLibs();
@@ -349,19 +375,16 @@ function formatBytes(bytes) {
 }
 
 async function compressPdfWithOptions(file, options, onProgress) {
-  await ensurePdfLib();
-  const source = await window.PDFLib.PDFDocument.load(await file.arrayBuffer());
-  const output = await window.PDFLib.PDFDocument.create();
-  const pages = await output.copyPages(source, source.getPageIndices());
-  pages.forEach(page => output.addPage(page));
-  const bytes = await output.save({
-    useObjectStreams: true,
-    addDefaultPage: false,
-    objectsPerTick: Math.max(25, Number(options.compression) || 50),
-  });
+  const strength = Math.max(1, Math.min(100, Number(options.compression) || 60));
+  const size = await postFileResult(
+    `/compress-pdf?strength=${encodeURIComponent(strength)}`,
+    file,
+    `${file.name.replace(/\.pdf$/i, "")}-compressed.pdf`,
+    onProgress,
+    15,
+  );
   onProgress(100);
-  downloadBlob(new Blob([bytes], { type: "application/pdf" }), `${file.name.replace(/\.pdf$/i, "")}-compressed.pdf`);
-  return bytes.length;
+  return size;
 }
 
 async function ocrPdf() {
@@ -756,11 +779,11 @@ const TOOL_SEO = {
     ],
   },
   [P.COMPRESS]: {
-    intro: "Reduce PDF size by rewriting and optimizing the PDF structure. The compression range lets users increase or decrease optimization strength before downloading a smaller PDF.",
-    steps: ["Upload a PDF.", "Adjust the compression range.", "Download the optimized PDF."],
+    intro: "Reduce PDF size with backend PDF compression, image downsampling and font optimization. The compression range lets users increase or decrease optimization strength before downloading a smaller PDF.",
+    steps: ["Upload a PDF.", "Adjust the compression range.", "Download the compressed PDF."],
     faqs: [
-      ["Does compression change page content?", "FileFlow keeps pages intact while optimizing PDF structure."],
-      ["Why are some PDFs not much smaller?", "Deep image recompression needs a production PDF engine; some already optimized PDFs cannot shrink much."],
+      ["Does compression change page content?", "FileFlow keeps pages intact while reducing image resolution and optimizing PDF output where possible."],
+      ["Why are some PDFs not much smaller?", "Some PDFs are already optimized or contain mostly vector text, so there may be little extra size to remove."],
     ],
   },
   [P.EDITOR]: {
@@ -1502,7 +1525,7 @@ function CompressPdfPage() {
               <span>Smaller change</span>
               <span>More compression</span>
             </div>
-            <p style={{ fontFamily: T.font.body, fontSize: 12.5, color: T.color.muted, margin: "12px 0 0" }}>Drag to increase or decrease compression strength. Deep image recompression needs a production PDF engine.</p>
+            <p style={{ fontFamily: T.font.body, fontSize: 12.5, color: T.color.muted, margin: "12px 0 0" }}>Drag to increase or decrease compression strength. Higher values reduce image quality more to make image-heavy PDFs smaller.</p>
           </div>
 
           {status === "converting" && (
