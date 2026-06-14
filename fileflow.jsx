@@ -1485,7 +1485,7 @@ function CompressPdfPage() {
       setStatus("error");
     }
   };
-  const compressionLabel = compression < 35 ? "Low" : compression < 75 ? "Balanced" : "High";
+  const compressionLabel = compression < 35 ? "Low" : compression < 65 ? "Balanced" : compression < 90 ? "High" : "Extreme";
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "40px 16px 72px" }}>
@@ -1525,7 +1525,7 @@ function CompressPdfPage() {
               <span>Smaller change</span>
               <span>More compression</span>
             </div>
-            <p style={{ fontFamily: T.font.body, fontSize: 12.5, color: T.color.muted, margin: "12px 0 0" }}>Drag to increase or decrease compression strength. Higher values reduce image quality more to make image-heavy PDFs smaller.</p>
+            <p style={{ fontFamily: T.font.body, fontSize: 12.5, color: T.color.muted, margin: "12px 0 0" }}>Drag higher for stronger compression. Extreme mode makes image-heavy PDFs much smaller by reducing image resolution and quality.</p>
           </div>
 
           {status === "converting" && (
