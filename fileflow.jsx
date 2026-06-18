@@ -723,6 +723,8 @@ const FAQ_DATA = [
 const TOOL_SEO = {
   [P.DOC]: {
     intro: "Convert Word and document files into clean PDFs for sharing, printing and archiving. This page supports DOC, DOCX, RTF, ODT and TXT workflows so people searching for document to PDF, Word to PDF or DOCX to PDF can open the right converter directly.",
+    searches: ["doc to pdf converter", "docx to pdf", "word to pdf online", "convert document to pdf", "rtf to pdf"],
+    useCases: ["Resumes and job applications", "Office reports and letters", "Forms, invoices and printable documents"],
     steps: ["Upload a DOC, DOCX, RTF, ODT or TXT file.", "Click Convert and wait for FileFlow to process the document.", "Download the finished PDF and review the layout."],
     faqs: [
       ["Can I convert DOCX to PDF online?", "Yes. Upload a DOCX file and FileFlow converts it to PDF using the configured backend converter."],
@@ -732,6 +734,8 @@ const TOOL_SEO = {
   },
   [P.WORD_PDF]: {
     intro: "Turn Word documents into PDFs that are easier to share and print. Use this direct Word to PDF converter page when you need a DOC or DOCX file saved as a portable PDF.",
+    searches: ["word to pdf converter", "docx to pdf online", "convert word file to pdf", "free word to pdf", "doc to pdf"],
+    useCases: ["Share Word files without editing", "Print stable PDF copies", "Submit school, office and government documents"],
     steps: ["Choose a DOC or DOCX file.", "Run the Word to PDF converter.", "Download the PDF output."],
     faqs: [
       ["What Word formats are supported?", "DOC and DOCX files are supported on the Word to PDF page."],
@@ -740,6 +744,8 @@ const TOOL_SEO = {
   },
   [P.PDF]: {
     intro: "Convert PDF files into editable DOCX documents for Word and compatible editors. This direct PDF to DOC converter page is built for users who need to edit PDF content in a Word document.",
+    searches: ["pdf to doc converter", "pdf to word", "pdf to docx", "convert pdf to editable word", "free pdf to word converter"],
+    useCases: ["Edit text from reports", "Reuse PDF content in Word", "Update contracts, forms and notes"],
     steps: ["Upload your PDF file.", "Convert the PDF into a DOCX document.", "Download and edit the Word file."],
     faqs: [
       ["Can every PDF become a perfect Word document?", "No. PDF to Word quality depends on how the PDF was created, fonts, layout complexity and whether the PDF is scanned."],
@@ -748,6 +754,8 @@ const TOOL_SEO = {
   },
   [P.PDF_WORD]: {
     intro: "Create editable Word files from PDF documents. Use PDF to Word when you need a DOCX output from a PDF file for editing, review or reuse.",
+    searches: ["pdf to word converter", "convert pdf to word", "pdf to docx online", "editable word from pdf", "pdf document to word"],
+    useCases: ["Make a PDF editable", "Extract text into DOCX", "Review and rewrite existing PDF documents"],
     steps: ["Select a PDF.", "Run conversion.", "Download the DOCX file."],
     faqs: [
       ["Is the output editable?", "Text-based PDFs usually produce editable DOCX content. Scanned PDFs need OCR."],
@@ -756,6 +764,8 @@ const TOOL_SEO = {
   },
   [P.IMG]: {
     intro: "Combine images into a single PDF for forms, receipts, notes and photo documents. JPG, PNG, WebP, GIF, BMP and TIFF images can be arranged into one PDF file.",
+    searches: ["image to pdf converter", "jpg png to pdf", "photos to pdf", "webp to pdf", "combine images into pdf"],
+    useCases: ["Receipts and scanned paperwork", "Photo documents", "Screenshots and mobile captures"],
     steps: ["Upload JPG, PNG, WebP or other images.", "FileFlow places the images into a PDF.", "Download the combined PDF."],
     faqs: [
       ["Can I convert multiple images to one PDF?", "Yes. Upload multiple images and FileFlow combines them into one PDF."],
@@ -764,6 +774,8 @@ const TOOL_SEO = {
   },
   [P.MERGE]: {
     intro: "Merge several PDF files into one organized PDF document. This page helps users combine contracts, scanned pages, reports and attachments into a single PDF.",
+    searches: ["merge pdf", "combine pdf files", "join pdf online", "merge multiple pdfs", "combine pdf pages"],
+    useCases: ["Combine scanned pages", "Merge reports and attachments", "Create one PDF from several documents"],
     steps: ["Upload two or more PDFs.", "Click Convert and Download.", "Save the merged PDF."],
     faqs: [
       ["Can I merge PDFs for free?", "Yes. FileFlow can merge PDFs directly in the browser."],
@@ -772,6 +784,8 @@ const TOOL_SEO = {
   },
   [P.SPLIT]: {
     intro: "Split a PDF into all pages, selected page numbers or custom ranges. Use the split PDF tool to extract one page, several pages or ranges such as 1-6, 8-9.",
+    searches: ["split pdf", "extract pdf pages", "separate pdf pages", "split pdf by range", "save selected pdf pages"],
+    useCases: ["Extract one page from a PDF", "Save selected page ranges", "Separate scanned documents"],
     steps: ["Upload a PDF.", "Choose all pages, page numbers or ranges.", "Download the split PDF files."],
     faqs: [
       ["Can I split only selected pages?", "Yes. Enter page numbers or ranges such as 1-6, 8-9."],
@@ -780,6 +794,8 @@ const TOOL_SEO = {
   },
   [P.COMPRESS]: {
     intro: "Reduce PDF size with backend PDF compression, image downsampling and font optimization. The compression range lets users increase or decrease optimization strength before downloading a smaller PDF.",
+    searches: ["compress pdf", "reduce pdf size", "make pdf smaller", "pdf compressor", "compress pdf to smaller file"],
+    useCases: ["Email large PDFs", "Upload documents under size limits", "Reduce scanned PDF file size"],
     steps: ["Upload a PDF.", "Adjust the compression range.", "Download the compressed PDF."],
     faqs: [
       ["Does compression change page content?", "FileFlow keeps pages intact while reducing image resolution and optimizing PDF output where possible."],
@@ -788,6 +804,8 @@ const TOOL_SEO = {
   },
   [P.EDITOR]: {
     intro: "Edit PDFs by adding pages, text and images, then export a new PDF. The editor supports page thumbnails, blank pages, imported pages from another PDF and draggable content.",
+    searches: ["pdf editor", "edit pdf online", "add image to pdf", "add text to pdf", "insert pages into pdf"],
+    useCases: ["Add missing pages", "Place images or signatures", "Insert text labels and notes"],
     steps: ["Upload a PDF.", "Add text, images, blank pages or pages from another PDF.", "Download the edited PDF."],
     faqs: [
       ["Can I add images to a PDF?", "Yes. Select a page, add an image, drag it into place and resize it."],
@@ -796,6 +814,8 @@ const TOOL_SEO = {
   },
   [P.PDF_TO_JPG]: {
     intro: "Export PDF pages as high-quality JPG images. Use this converter when each page of a PDF needs to become a separate image file.",
+    searches: ["pdf to jpg", "convert pdf to image", "pdf pages to jpg", "extract jpg from pdf", "pdf to photo"],
+    useCases: ["Upload PDF pages as images", "Create page previews", "Share forms as JPG files"],
     steps: ["Upload a PDF.", "FileFlow renders each page.", "Download JPG images for each page."],
     faqs: [
       ["Does PDF to JPG run in the browser?", "Yes. PDF pages are rendered locally in the browser."],
@@ -804,6 +824,8 @@ const TOOL_SEO = {
   },
   [P.JPG_TO_PDF]: {
     intro: "Convert JPG and JPEG images into a clean PDF document. This direct JPG to PDF page is useful for photos, scanned forms and image documents.",
+    searches: ["jpg to pdf", "jpeg to pdf", "image to pdf", "photo to pdf", "convert jpg images to pdf"],
+    useCases: ["Turn photos into one PDF", "Convert scanned JPG forms", "Create PDF copies of image documents"],
     steps: ["Upload JPG images.", "Convert them into a PDF.", "Download the PDF file."],
     faqs: [
       ["Can I convert several JPGs at once?", "Yes. Multiple JPG files can be combined into one PDF."],
@@ -812,6 +834,8 @@ const TOOL_SEO = {
   },
   [P.PNG_TO_PDF]: {
     intro: "Convert PNG images into a shareable PDF file. Use PNG to PDF for screenshots, transparent images, forms and other PNG documents.",
+    searches: ["png to pdf", "convert png to pdf", "screenshot to pdf", "png image to pdf", "image to pdf converter"],
+    useCases: ["Save screenshots as PDF", "Convert diagrams and forms", "Share PNG images as a document"],
     steps: ["Upload PNG images.", "Create the PDF.", "Download the result."],
     faqs: [
       ["Can transparent PNG files be converted?", "Yes. PNG files can be placed into a PDF."],
@@ -922,7 +946,12 @@ function buildSchemas(page) {
     });
   }
   if (toolSeo?.faqs?.length || page === P.FAQ) {
-    const faqs = toolSeo?.faqs || FAQ_DATA.map(({ q, a }) => [q, a]);
+    const faqs = toolSeo?.faqs
+      ? [
+        ...toolSeo.faqs,
+        ...(toolSeo.searches?.length ? [[`What searches does ${label} help with?`, `${label} helps with searches such as ${toolSeo.searches.join(", ")}.`]] : []),
+      ]
+      : FAQ_DATA.map(({ q, a }) => [q, a]);
     schemas.push({
       "@context": "https://schema.org",
       "@type": "FAQPage",
@@ -1136,6 +1165,28 @@ function ToolSeoSection({ page, accent }) {
           ))}
         </ol>
       </div>
+      {(content.searches?.length || content.useCases?.length) && (
+        <div style={{ background: T.color.surface, border: `1px solid ${T.color.border}`, borderRadius: T.radius.md, padding: 20 }}>
+          <h2 style={{ fontFamily: T.font.display, fontWeight: 700, fontSize: 23, color: T.color.dark, margin: "0 0 14px" }}>Popular {PAGE_LABEL[page]} searches</h2>
+          {content.searches?.length && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: content.useCases?.length ? 18 : 0 }}>
+              {content.searches.map(term => (
+                <span key={term} style={{ fontFamily: T.font.body, fontSize: 12.5, fontWeight: 600, color: accent, background: `${accent}10`, border: `1px solid ${accent}22`, borderRadius: T.radius.pill, padding: "7px 10px" }}>{term}</span>
+              ))}
+            </div>
+          )}
+          {content.useCases?.length && (
+            <div>
+              <h3 style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 14.5, color: T.color.dark, margin: "0 0 8px" }}>Best for</h3>
+              <ul style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 6 }}>
+                {content.useCases.map(item => (
+                  <li key={item} style={{ fontFamily: T.font.body, fontSize: 13.5, color: T.color.mid, lineHeight: 1.55 }}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
       <div style={{ background: T.color.surface, border: `1px solid ${T.color.border}`, borderRadius: T.radius.md, padding: 20 }}>
         <h2 style={{ fontFamily: T.font.display, fontWeight: 700, fontSize: 23, color: T.color.dark, margin: "0 0 14px" }}>{PAGE_LABEL[page]} FAQ</h2>
         <div style={{ display: "grid", gap: 12 }}>
