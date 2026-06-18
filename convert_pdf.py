@@ -28,10 +28,14 @@ def _section_xml(width_pt, height_pt, is_last):
 
 
 def _page_image_xml(rel_id, page_no, width_pt, height_pt, is_last):
-    cx = _pt_to_emu(width_pt)
-    cy = _pt_to_emu(height_pt)
+    cx = _pt_to_emu(max(1, width_pt - 0.75))
+    cy = _pt_to_emu(max(1, height_pt - 0.75))
+    section = _section_xml(width_pt, height_pt, is_last)
     return f"""<w:p>
-      <w:pPr><w:spacing w:before="0" w:after="0" w:line="1" w:lineRule="exact"/></w:pPr>
+      <w:pPr>
+        <w:spacing w:before="0" w:after="0"/>
+        {'' if is_last else section}
+      </w:pPr>
       <w:r>
         <w:drawing>
           <wp:inline distT="0" distB="0" distL="0" distR="0">
@@ -54,7 +58,7 @@ def _page_image_xml(rel_id, page_no, width_pt, height_pt, is_last):
           </wp:inline>
         </w:drawing>
       </w:r>
-    </w:p>{_section_xml(width_pt, height_pt, is_last)}"""
+    </w:p>{section if is_last else ''}"""
 
 
 def _content_types(page_count):
