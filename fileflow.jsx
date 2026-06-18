@@ -1108,20 +1108,21 @@ function DropZone({ meta, onFiles }) {
       onDrop={e => { e.preventDefault(); setDrag(false); if (e.dataTransfer.files.length) onFiles(Array.from(e.dataTransfer.files)); }}
       onClick={() => ref.current.click()}
       style={{
-        border: `2px dashed ${drag ? meta.accent : T.color.border}`, borderRadius: T.radius.lg,
-        padding: "52px 24px", textAlign: "center", cursor: "pointer",
-        background: drag ? `${meta.accent}08` : T.color.bg,
-        transition: "all .22s", boxShadow: drag ? `0 0 0 5px ${meta.accent}14` : "none",
+        border: `2px dashed ${drag ? meta.accent : "#CBD5E1"}`, borderRadius: T.radius.md,
+        padding: "34px 22px", minHeight: 210, textAlign: "center", cursor: "pointer",
+        background: drag ? `${meta.accent}0D` : "#FBFCFE",
+        transition: "all .22s", boxShadow: drag ? `0 0 0 5px ${meta.accent}14` : "0 10px 28px rgba(17,19,24,0.04)",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       }}>
       <input ref={ref} type="file" accept={meta.accepts} multiple style={{ display: "none" }}
         onChange={e => e.target.files.length && onFiles(Array.from(e.target.files))} />
-      <div style={{ width: 52, height: 52, borderRadius: T.radius.md, background: `${meta.accent}12`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-        <Upload size={24} color={meta.accent} strokeWidth={1.8} />
+      <div style={{ width: 58, height: 58, borderRadius: T.radius.md, background: `${meta.accent}12`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", border: `1px solid ${meta.accent}18` }}>
+        <Upload size={25} color={meta.accent} strokeWidth={2} />
       </div>
-      <p style={{ fontFamily: T.font.body, fontWeight: 600, fontSize: 16, color: T.color.dark, margin: "0 0 6px" }}>
+      <p style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 16, color: T.color.dark, margin: "0 0 7px", lineHeight: 1.35 }}>
         Drop files here or <span style={{ color: meta.accent, textDecoration: "underline" }}>browse</span>
       </p>
-      <p style={{ fontFamily: T.font.body, fontSize: 13, color: T.color.muted, margin: 0 }}>
+      <p style={{ fontFamily: T.font.body, fontSize: 13, color: T.color.muted, margin: 0, lineHeight: 1.45, maxWidth: 360 }}>
         {meta.acceptLabel} · Max 100 MB per file
       </p>
     </div>
