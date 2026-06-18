@@ -2525,8 +2525,55 @@ function MobileBottomTabs({ page, go }) {
   );
 }
 
+function SplashScreen() {
+  return (
+    <div className="ff-splash" role="status" aria-label="Loading FileFlow" style={{
+      position: "fixed", inset: 0, zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center",
+      background: T.color.dark, color: "#fff", padding: 24,
+    }}>
+      <div style={{ display: "grid", justifyItems: "center", gap: 18, textAlign: "center" }}>
+        <div style={{
+          width: 82, height: 82, borderRadius: 24, background: "#fff",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 18px 50px rgba(0,0,0,0.28)",
+        }}>
+          <Zap size={42} color={T.color.dark} strokeWidth={2.6} />
+        </div>
+        <div>
+          <h1 style={{ fontFamily: T.font.display, fontSize: 36, lineHeight: 1, margin: "0 0 8px", fontWeight: 700 }}>FileFlow</h1>
+          <p style={{ fontFamily: T.font.body, fontSize: 13.5, color: "rgba(255,255,255,0.62)", margin: 0 }}>Fast PDF and document tools</p>
+        </div>
+        <div style={{ width: 132, height: 4, borderRadius: 99, background: "rgba(255,255,255,0.14)", overflow: "hidden", marginTop: 2 }}>
+          <div className="ff-splash-bar" style={{ width: "42%", height: "100%", borderRadius: 99, background: "#93C5FD" }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const { page, go } = useNav();
+  const [showSplash, setShowSplash] = useState(() => {
+    try {
+      return sessionStorage.getItem("fileflow_splash_seen") !== "1";
+    } catch {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    if (!showSplash) return;
+    const timer = window.setTimeout(() => {
+      try {
+        sessionStorage.setItem("fileflow_splash_seen", "1");
+      } catch {
+        // Ignore storage restrictions.
+      }
+      setShowSplash(false);
+    }, 1150);
+    return () => window.clearTimeout(timer);
+  }, [showSplash]);
+
   const renderPage = () => {
     if (page === P.HOME) return <HomePage go={go} />;
     if (page === P.FAQ) return <FAQPage />;
@@ -2545,11 +2592,16 @@ export default function App() {
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Outfit:wght@400;500;600;700&display=swap');
         *{box-sizing:border-box;}body{margin:0;}
         @keyframes ff-spin{to{transform:rotate(360deg);}}
+        @keyframes ff-splash-out{0%,72%{opacity:1;}100%{opacity:0;visibility:hidden;}}
+        @keyframes ff-splash-pulse{0%{transform:translateX(-120%);}100%{transform:translateX(260%);}}
+        .ff-splash{animation:ff-splash-out 1.15s ease forwards;}
+        .ff-splash-bar{animation:ff-splash-pulse .95s ease-in-out infinite;}
         @media(max-width:640px){.ff-desk-nav{display:none!important;}.ff-ham{display:flex!important;}.ff-bottom-tabs{display:block!important;}body{padding-bottom:78px;}.ff-pdf-editor-grid{grid-template-columns:1fr!important;}}
         @media(min-width:641px){.ff-mob-menu{display:none!important;}.ff-bottom-tabs{display:none!important;}}
         @media(max-width:980px){.ff-pdf-editor-grid{grid-template-columns:1fr!important;}}
         button{transition:opacity .15s;}button:active{opacity:.8;}
       `}</style>
+      {showSplash && <SplashScreen />}
       <Header page={page} go={go} />
       <Crumb page={page} go={go} />
       <main style={{ flex: 1 }}>{renderPage()}</main>
