@@ -28,7 +28,6 @@ export default defineConfig({
         security: "security/index.html",
         supportedFormats: "supported-formats/index.html",
         conversionQuality: "conversion-quality/index.html",
-        notFound: "404.html",
       },
     },
   },
