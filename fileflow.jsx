@@ -1071,30 +1071,6 @@ function Header({ page, go }) {
           <Menu size={22} color={T.color.dark} />
         </button>
       </div>
-      <nav className="ff-mobile-tabs" aria-label="Mobile tool tabs" style={{
-        display: "none", gap: 8, overflowX: "auto", padding: "0 14px 10px",
-        scrollbarWidth: "none", WebkitOverflowScrolling: "touch",
-      }}>
-        {[
-          { label: "Doc PDF", p: P.DOC },
-          { label: "PDF Doc", p: P.PDF },
-          { label: "Merge", p: P.MERGE },
-          { label: "Split", p: P.SPLIT },
-          { label: "Compress", p: P.COMPRESS },
-          { label: "Editor", p: P.EDITOR },
-          { label: "PDF JPG", p: P.PDF_TO_JPG },
-          { label: "Images", p: P.IMG },
-        ].map(({ label, p }) => (
-          <PageLink key={p} page={p} go={go} style={{
-            flex: "0 0 auto", minHeight: 34, display: "inline-flex", alignItems: "center", justifyContent: "center",
-            padding: "8px 12px", borderRadius: T.radius.pill, border: `1px solid ${page === p ? T.color.dark : T.color.border}`,
-            background: page === p ? T.color.dark : T.color.surface, color: page === p ? "#fff" : T.color.mid,
-            fontFamily: T.font.body, fontWeight: 700, fontSize: 12.5, whiteSpace: "nowrap",
-          }}>
-            {label}
-          </PageLink>
-        ))}
-      </nav>
       {open && (
         <div className="ff-mob-menu" style={{ background: T.color.surface, borderTop: `1px solid ${T.color.border}`, padding: "10px 20px 16px", maxHeight: "calc(100vh - 62px)", overflowY: "auto" }}>
           {mobileLinks.map(({ label, p, Icon: Ic }) => (
@@ -2514,6 +2490,41 @@ function Footer({ go }) {
   );
 }
 
+function MobileBottomTabs({ page, go }) {
+  const tabs = [
+    { label: "Home", p: P.HOME, Icon: Home },
+    { label: "PDF Doc", p: P.PDF, Icon: FileOutput },
+    { label: "Editor", p: P.EDITOR, Icon: FileText },
+    { label: "Compress", p: P.COMPRESS, Icon: Download },
+  ];
+  return (
+    <nav className="ff-bottom-tabs" aria-label="Mobile bottom navigation" style={{
+      display: "none", position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 260,
+      background: "rgba(255,255,255,0.96)", backdropFilter: "blur(16px)",
+      borderTop: `1px solid ${T.color.border}`, padding: "7px 10px calc(7px + env(safe-area-inset-bottom))",
+      boxShadow: "0 -10px 30px rgba(17,19,24,0.08)",
+    }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 4, maxWidth: 520, margin: "0 auto" }}>
+        {tabs.map(({ label, p, Icon }) => {
+          const active = page === p;
+          return (
+            <PageLink key={p} page={p} go={go} style={{
+              minHeight: 52, borderRadius: T.radius.sm, display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center", gap: 4,
+              color: active ? T.color.dark : T.color.muted,
+              background: active ? "#F1F5F9" : "transparent",
+              fontFamily: T.font.body, fontWeight: active ? 800 : 700, fontSize: 11.5,
+            }}>
+              <Icon size={19} color={active ? T.color.dark : T.color.muted} strokeWidth={2.1} />
+              <span>{label}</span>
+            </PageLink>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
 export default function App() {
   const { page, go } = useNav();
   const renderPage = () => {
@@ -2534,9 +2545,8 @@ export default function App() {
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Outfit:wght@400;500;600;700&display=swap');
         *{box-sizing:border-box;}body{margin:0;}
         @keyframes ff-spin{to{transform:rotate(360deg);}}
-        .ff-mobile-tabs::-webkit-scrollbar{display:none;}
-        @media(max-width:640px){.ff-desk-nav{display:none!important;}.ff-ham{display:flex!important;}.ff-mobile-tabs{display:flex!important;}.ff-pdf-editor-grid{grid-template-columns:1fr!important;}}
-        @media(min-width:641px){.ff-mob-menu{display:none!important;}.ff-mobile-tabs{display:none!important;}}
+        @media(max-width:640px){.ff-desk-nav{display:none!important;}.ff-ham{display:flex!important;}.ff-bottom-tabs{display:block!important;}body{padding-bottom:78px;}.ff-pdf-editor-grid{grid-template-columns:1fr!important;}}
+        @media(min-width:641px){.ff-mob-menu{display:none!important;}.ff-bottom-tabs{display:none!important;}}
         @media(max-width:980px){.ff-pdf-editor-grid{grid-template-columns:1fr!important;}}
         button{transition:opacity .15s;}button:active{opacity:.8;}
       `}</style>
@@ -2544,6 +2554,7 @@ export default function App() {
       <Crumb page={page} go={go} />
       <main style={{ flex: 1 }}>{renderPage()}</main>
       <Footer go={go} />
+      <MobileBottomTabs page={page} go={go} />
     </div>
   );
 }
