@@ -600,6 +600,31 @@ const SEO = {
   },
 };
 
+const SEO_KEYWORDS = {
+  [P.HOME]: "file converter, free file converter, pdf converter, document converter, image to pdf, pdf to word, word to pdf, merge pdf, split pdf, compress pdf, pdf editor",
+  [P.DOC]: "doc to pdf converter, docx to pdf, word to pdf online, convert document to pdf, rtf to pdf, odt to pdf, txt to pdf, free word to pdf converter",
+  [P.WORD_PDF]: "word to pdf converter, docx to pdf online, convert word file to pdf, free word to pdf, doc to pdf, microsoft word to pdf",
+  [P.PDF]: "pdf to doc converter, pdf to word, pdf to docx, convert pdf to doc, convert pdf to editable word, free pdf to word converter",
+  [P.PDF_WORD]: "pdf to word converter, convert pdf to word, pdf to docx online, editable word from pdf, pdf document to word",
+  [P.IMG]: "image to pdf converter, jpg png to pdf, photos to pdf, webp to pdf, combine images into pdf, image converter",
+  [P.PDF_TO_JPG]: "pdf to jpg, convert pdf to image, pdf pages to jpg, extract jpg from pdf, pdf to photo, pdf image converter",
+  [P.JPG_TO_PDF]: "jpg to pdf, jpeg to pdf, image to pdf, photo to pdf, convert jpg images to pdf, jpg pdf converter",
+  [P.PNG_TO_PDF]: "png to pdf, convert png to pdf, screenshot to pdf, png image to pdf, image to pdf converter",
+  [P.MERGE]: "merge pdf, combine pdf files, join pdf online, merge multiple pdfs, combine pdf pages, free pdf merger",
+  [P.SPLIT]: "split pdf, extract pdf pages, separate pdf pages, split pdf by range, save selected pdf pages, pdf splitter",
+  [P.COMPRESS]: "compress pdf, reduce pdf size, make pdf smaller, pdf compressor, compress pdf to smaller file, reduce scanned pdf size",
+  [P.EDITOR]: "pdf editor, edit pdf online, add image to pdf, add text to pdf, insert pages into pdf, pdf page editor",
+  [P.OCR]: "ocr pdf, scanned pdf to text, pdf text recognition, searchable pdf, extract text from scanned pdf",
+  [P.FAQ]: "file conversion help, pdf converter faq, word to pdf help, pdf to word help, fileflow faq",
+  [P.ABOUT]: "about fileflow, kanaka raju, full stack developer, file conversion tool",
+  [P.CONTACT]: "contact fileflow, fileflow support, conversion support, enjoytech8@gmail.com",
+  [P.PRIVACY]: "fileflow privacy policy, file conversion privacy, secure pdf converter, private file converter",
+  [P.TERMS]: "fileflow terms, file converter terms, pdf converter terms of service",
+  [P.SECURITY]: "fileflow security, secure file conversion, pdf converter security, document conversion safety",
+  [P.FORMATS]: "supported file formats, pdf formats, docx formats, image formats, jpg png webp pdf converter",
+  [P.QUALITY]: "conversion quality, pdf to word quality, docx to pdf layout, preserve fonts, preserve pdf layout",
+};
+
 const META = {
   [P.DOC]: {
     title: "Document to PDF", sub: "Convert Word, TXT, ODT and RTF files to shareable PDFs",
@@ -986,6 +1011,7 @@ function useNav() {
     const url = pageUrl(page);
     document.title = seo.title;
     const description = ensureMeta('meta[name="description"]', element => element.setAttribute("name", "description"));
+    const keywords = ensureMeta('meta[name="keywords"]', element => element.setAttribute("name", "keywords"));
     const ogTitle = ensureMeta('meta[property="og:title"]', element => element.setAttribute("property", "og:title"));
     const ogDescription = ensureMeta('meta[property="og:description"]', element => element.setAttribute("property", "og:description"));
     const ogUrl = ensureMeta('meta[property="og:url"]', element => element.setAttribute("property", "og:url"));
@@ -993,6 +1019,7 @@ function useNav() {
     const twitterTitle = ensureMeta('meta[name="twitter:title"]', element => element.setAttribute("name", "twitter:title"));
     const twitterDescription = ensureMeta('meta[name="twitter:description"]', element => element.setAttribute("name", "twitter:description"));
     description.setAttribute("content", seo.description);
+    keywords.setAttribute("content", SEO_KEYWORDS[page] || SEO_KEYWORDS[P.HOME]);
     ensureCanonical().href = url;
     ogTitle.setAttribute("content", seo.title);
     ogDescription.setAttribute("content", seo.description);
