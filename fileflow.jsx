@@ -412,6 +412,8 @@ const P = {
   TERMS: "terms", SECURITY: "security", FORMATS: "supported-formats", QUALITY: "conversion-quality",
 };
 
+const BACKEND_PAGES = new Set([P.DOC, P.WORD_PDF, P.PDF, P.PDF_WORD, P.COMPRESS]);
+
 const PAGE_PATH = {
   [P.HOME]: "/",
   [P.DOC]: "/doc-to-pdf/",
@@ -1156,6 +1158,51 @@ function DropZone({ meta, onFiles }) {
   );
 }
 
+function useBackendStatus(enabled) {
+  const [state, setState] = useState("checking");
+  useEffect(() => {
+    if (!enabled) return;
+    let cancelled = false;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 4500);
+    fetch(`${API_BASE}/health`, { signal: controller.signal })
+      .then(response => {
+        if (!cancelled) setState(response.ok ? "online" : "offline");
+      })
+      .catch(() => {
+        if (!cancelled) setState("offline");
+      })
+      .finally(() => window.clearTimeout(timer));
+    return () => {
+      cancelled = true;
+      controller.abort();
+      window.clearTimeout(timer);
+    };
+  }, [enabled]);
+  return state;
+}
+
+function BackendStatusBadge({ page }) {
+  const enabled = BACKEND_PAGES.has(page);
+  const state = useBackendStatus(enabled);
+  if (!enabled) return null;
+  const tone = state === "online"
+    ? { bg: "#ECFDF5", border: "#A7F3D0", text: "#047857", dot: "#10B981", label: "Converter online" }
+    : state === "checking"
+      ? { bg: "#F8FAFC", border: "#E2E8F0", text: "#64748B", dot: "#94A3B8", label: "Checking converter" }
+      : { bg: "#FFF7ED", border: "#FED7AA", text: "#C2410C", dot: "#F97316", label: "Converter waking up" };
+  return (
+    <div style={{
+      display: "inline-flex", alignItems: "center", gap: 8, marginTop: 14,
+      background: tone.bg, border: `1px solid ${tone.border}`, borderRadius: T.radius.pill,
+      padding: "7px 12px", fontFamily: T.font.body, fontWeight: 700, fontSize: 12.5, color: tone.text,
+    }}>
+      <span style={{ width: 8, height: 8, borderRadius: 99, background: tone.dot, display: "inline-block" }} />
+      {tone.label}
+    </div>
+  );
+}
+
 function FileRow({ file, meta, onRemove, status }) {
   const ext = file.name.split(".").pop().toUpperCase();
   return (
@@ -1277,6 +1324,7 @@ function ConverterPage({ meta, page }) {
           <ToIcon size={15} color={meta.accent} />
           <span style={{ fontFamily: T.font.body, fontWeight: 600, fontSize: 13, color: meta.accent }}>{meta.to}</span>
         </div>
+        <BackendStatusBadge page={page} />
       </div>
 
       {/* Info badge */}
@@ -1574,6 +1622,7 @@ function CompressPdfPage() {
         </div>
         <h1 style={{ fontFamily: T.font.display, fontWeight: 700, fontSize: "clamp(28px,6vw,42px)", color: T.color.dark, margin: "0 0 10px" }}>Compress PDF</h1>
         <p style={{ fontFamily: T.font.body, fontSize: 15, color: T.color.mid, margin: 0 }}>Drag the compression range to increase or decrease optimization strength.</p>
+        <BackendStatusBadge page={P.COMPRESS} />
       </div>
 
       {!file && <DropZone meta={meta} onFiles={addFiles} />}

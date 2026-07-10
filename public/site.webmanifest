@@ -1,6 +1,10 @@
 {
   "name": "FileFlow",
   "short_name": "FileFlow",
+  "description": "Free PDF, document and image conversion tools.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
   "icons": [
     {
       "src": "/favicon.svg",
@@ -11,5 +15,7 @@
   ],
   "theme_color": "#111318",
   "background_color": "#F5F4F0",
-  "display": "standalone"
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "utilities"]
 }
