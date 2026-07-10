@@ -7,13 +7,29 @@ import {
 } from "lucide-react";
 
 /* ─── Load external libs dynamically ─── */
+const scriptLoads = new Map();
+
 function loadScript(src) {
-  return new Promise((res, rej) => {
-    if (document.querySelector(`script[src="${src}"]`)) return res();
+  if (scriptLoads.has(src)) return scriptLoads.get(src);
+  const existing = document.querySelector(`script[src="${src}"]`);
+  if (existing?.dataset.loaded === "true") return Promise.resolve();
+
+  const promise = new Promise((res, rej) => {
+    if (existing) {
+      existing.addEventListener("load", res, { once: true });
+      existing.addEventListener("error", () => rej(new Error(`Could not load ${src}`)), { once: true });
+      return;
+    }
     const s = document.createElement("script");
-    s.src = src; s.onload = res; s.onerror = rej;
+    s.src = src;
+    s.crossOrigin = "anonymous";
+    s.onload = () => { s.dataset.loaded = "true"; res(); };
+    s.onerror = () => rej(new Error(`Could not load ${src}`));
     document.head.appendChild(s);
   });
+  scriptLoads.set(src, promise);
+  promise.catch(() => scriptLoads.delete(src));
+  return promise;
 }
 
 async function ensureLibs() {
@@ -28,15 +44,49 @@ async function ensurePdfLib() {
   await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js");
 }
 
+async function ensureOcrLib() {
+  await loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js");
+  if (!window.Tesseract) throw new Error("The OCR engine could not be loaded. Check your connection and try again.");
+}
+
 const API_BASE = window.FILEFLOW_API_BASE || import.meta.env.VITE_FILEFLOW_API_BASE || "http://127.0.0.1:8765";
+const MAX_FILE_BYTES = 100 * 1024 * 1024;
+
+function acceptedExtensions(accepts = "") {
+  return accepts.split(",").map(value => value.trim().toLowerCase()).filter(value => value.startsWith("."));
+}
+
+function validateFiles(files, meta, { multiple = true } = {}) {
+  const extensions = acceptedExtensions(meta.accepts);
+  const accepted = [];
+  const errors = [];
+  for (const file of files) {
+    const lowerName = file.name.toLowerCase();
+    if (extensions.length && !extensions.some(extension => lowerName.endsWith(extension))) {
+      errors.push(`${file.name}: unsupported file type.`);
+    } else if (file.size > MAX_FILE_BYTES) {
+      errors.push(`${file.name}: file exceeds the 100 MB limit.`);
+    } else if (file.size === 0) {
+      errors.push(`${file.name}: file is empty.`);
+    } else {
+      accepted.push(file);
+    }
+  }
+  return { accepted: multiple ? accepted : accepted.slice(0, 1), errors };
+}
 
 function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
+  a.style.display = "none";
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  window.setTimeout(() => {
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, 1000);
 }
 
 const FILEFLOW_UPLOAD_COUNT_KEY = "fileflow_uploaded_count";
@@ -387,8 +437,49 @@ async function compressPdfWithOptions(file, options, onProgress) {
   return size;
 }
 
-async function ocrPdf() {
-  throw new Error("OCR PDF needs a production OCR worker such as Tesseract, Google Vision, Azure OCR or AWS Textract before launch.");
+async function ocrPdf(files, onProgress) {
+  await ensureLibs();
+  await ensureOcrLib();
+  const totalPages = [];
+  for (const file of files) {
+    const pdf = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+    totalPages.push({ file, pdf });
+  }
+  const pageTotal = totalPages.reduce((sum, item) => sum + item.pdf.numPages, 0);
+  let pagesDone = 0;
+  const worker = await window.Tesseract.createWorker("eng", 1, {
+    logger: message => {
+      if (message.status === "recognizing text") {
+        onProgress(Math.round(((pagesDone + message.progress) / Math.max(1, pageTotal)) * 100));
+      }
+    },
+  });
+  try {
+    for (const { file, pdf } of totalPages) {
+      const output = [];
+      for (let pageNo = 1; pageNo <= pdf.numPages; pageNo++) {
+        const page = await pdf.getPage(pageNo);
+        const viewport = page.getViewport({ scale: 2 });
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.ceil(viewport.width);
+        canvas.height = Math.ceil(viewport.height);
+        const context = canvas.getContext("2d", { alpha: false });
+        context.fillStyle = "#fff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        await page.render({ canvasContext: context, viewport }).promise;
+        const result = await worker.recognize(canvas);
+        output.push(`Page ${pageNo}\n${result.data.text.trim()}`);
+        canvas.width = 0;
+        canvas.height = 0;
+        pagesDone += 1;
+        onProgress(Math.round((pagesDone / Math.max(1, pageTotal)) * 100));
+      }
+      const blob = new Blob([output.join("\n\n--------------------\n\n") + "\n"], { type: "text/plain;charset=utf-8" });
+      downloadBlob(blob, file.name.replace(/\.pdf$/i, "") + "-ocr.txt");
+    }
+  } finally {
+    await worker.terminate();
+  }
 }
 
 /* ─── Design tokens ─── */
@@ -526,11 +617,11 @@ const SEO = {
   },
   [P.PDF]: {
     title: "PDF to DOC Converter - Convert PDF to Word Free | FileFlow",
-    description: "Convert PDF to editable DOCX Word documents with FileFlow. Use the PDF to DOC converter for text-based PDFs, reports and documents.",
+    description: "Convert PDF to layout-preserving DOCX Word documents with FileFlow. Keep page appearance, images, colors and form controls visible.",
   },
   [P.PDF_WORD]: {
     title: "PDF to Word Converter - Convert PDF to DOCX | FileFlow",
-    description: "Convert PDF files to editable Word DOCX documents with FileFlow. Open the direct PDF to Word page and download a Word file.",
+    description: "Convert PDF files to layout-preserving Word DOCX documents with FileFlow. Open the direct PDF to Word page and download a visual copy.",
   },
   [P.IMG]: {
     title: "Image to PDF Converter - JPG, PNG, WebP to PDF | FileFlow",
@@ -606,8 +697,8 @@ const SEO_KEYWORDS = {
   [P.HOME]: "file converter, free file converter, pdf converter, document converter, image to pdf, pdf to word, word to pdf, merge pdf, split pdf, compress pdf, pdf editor",
   [P.DOC]: "doc to pdf converter, docx to pdf, word to pdf online, convert document to pdf, rtf to pdf, odt to pdf, txt to pdf, free word to pdf converter",
   [P.WORD_PDF]: "word to pdf converter, docx to pdf online, convert word file to pdf, free word to pdf, doc to pdf, microsoft word to pdf",
-  [P.PDF]: "pdf to doc converter, pdf to word, pdf to docx, convert pdf to doc, convert pdf to editable word, free pdf to word converter",
-  [P.PDF_WORD]: "pdf to word converter, convert pdf to word, pdf to docx online, editable word from pdf, pdf document to word",
+  [P.PDF]: "pdf to doc converter, pdf to word, pdf to docx, layout preserving pdf to doc, visual pdf to word, free pdf to word converter",
+  [P.PDF_WORD]: "pdf to word converter, convert pdf to word, pdf to docx online, layout preserving pdf to word, visual pdf document to word",
   [P.IMG]: "image to pdf converter, jpg png to pdf, photos to pdf, webp to pdf, combine images into pdf, image converter",
   [P.PDF_TO_JPG]: "pdf to jpg, convert pdf to image, pdf pages to jpg, extract jpg from pdf, pdf to photo, pdf image converter",
   [P.JPG_TO_PDF]: "jpg to pdf, jpeg to pdf, image to pdf, photo to pdf, convert jpg images to pdf, jpg pdf converter",
@@ -648,14 +739,14 @@ const META = {
     convert: docxToPdf,
   },
   [P.PDF]: {
-    title: "PDF to Document", sub: "Extract and convert PDF content into editable DOCX files",
+    title: "PDF to Document", sub: "Preserve PDF page layout in a Word-compatible DOCX file",
     Icon: FileOutput, accent: T.color.accent.pdf,
     accepts: ".pdf", acceptLabel: "PDF",
     FromIcon: FileOutput, ToIcon: FileText, from: "PDF", to: "DOCX",
     convert: pdfToDocx,
   },
   [P.PDF_WORD]: {
-    title: "PDF to Word", sub: "Convert PDF content into editable Word DOCX files",
+    title: "PDF to Word", sub: "Preserve PDF page appearance in a Word-compatible DOCX file",
     Icon: FileOutput, accent: T.color.accent.pdf,
     accepts: ".pdf", acceptLabel: "PDF",
     FromIcon: FileOutput, ToIcon: FileText, from: "PDF", to: "Word",
@@ -718,7 +809,7 @@ const META = {
     convert: async () => {},
   },
   [P.OCR]: {
-    title: "OCR PDF", sub: "Recognize text in scanned PDFs with a production OCR worker",
+    title: "OCR PDF", sub: "Recognize text in scanned PDFs and download extracted text",
     Icon: FileText, accent: T.color.accent.doc,
     accepts: ".pdf", acceptLabel: "PDF",
     FromIcon: FileOutput, ToIcon: FileText, from: "Scanned PDF", to: "Text",
@@ -728,7 +819,7 @@ const META = {
 
 const TOOLS = [
   { page: P.DOC, Icon: FileText, label: "Document to PDF", desc: "Word, TXT, ODT, RTF", accent: T.color.accent.doc },
-  { page: P.PDF, Icon: FileOutput, label: "PDF to Document", desc: "Extract to editable DOCX", accent: T.color.accent.pdf },
+  { page: P.PDF, Icon: FileOutput, label: "PDF to Document", desc: "Layout-preserving DOCX", accent: T.color.accent.pdf },
   { page: P.IMG, Icon: Image, label: "Image to PDF", desc: "JPG, PNG, WebP and more", accent: T.color.accent.img },
   { page: P.MERGE, Icon: FileOutput, label: "Merge PDF", desc: "Combine PDFs", accent: T.color.accent.pdf },
   { page: P.SPLIT, Icon: FileOutput, label: "Split PDF", desc: "Extract pages", accent: T.color.accent.pdf },
@@ -740,7 +831,7 @@ const TOOLS = [
 ];
 
 const FAQ_DATA = [
-  { q: "Are conversions really free?", a: "Yes — 100% free, no signup, no watermarks, no file limits. Everything runs in your browser." },
+  { q: "Are conversions really free?", a: "Yes — FileFlow has no signup or watermarks. Browser tools run locally, while document conversion and compression use the configured backend." },
   { q: "Is my data secure?", a: "Image and PDF utility tools run in the browser. Word and advanced PDF conversions use the configured FileFlow converter service, which should delete temporary files after conversion." },
   { q: "What file size is supported?", a: "Up to 100 MB per file. For large PDFs with many pages, conversion may take a few seconds." },
   { q: "Does DOCX to PDF preserve formatting?", a: "DOCX to PDF uses Microsoft Word export in the local converter setup for better layout, font, image and table preservation." },
@@ -770,23 +861,23 @@ const TOOL_SEO = {
     ],
   },
   [P.PDF]: {
-    intro: "Convert PDF files into editable DOCX documents for Word and compatible editors. This direct PDF to DOC converter page is built for users who need to edit PDF content in a Word document.",
-    searches: ["pdf to doc converter", "pdf to word", "pdf to docx", "convert pdf to editable word", "free pdf to word converter"],
-    useCases: ["Edit text from reports", "Reuse PDF content in Word", "Update contracts, forms and notes"],
+    intro: "Convert PDF files into Word-compatible DOCX documents while preserving the original visual page layout. Each PDF page is placed in DOCX as a high-quality page image so fonts, positions, colors and form controls remain visible.",
+    searches: ["pdf to doc converter", "pdf to word", "pdf to docx", "layout preserving pdf to doc", "free pdf to word converter"],
+    useCases: ["Open a visual PDF copy in Word", "Preserve forms and positioned content", "Archive page-accurate DOCX copies"],
     steps: ["Upload your PDF file.", "Convert the PDF into a DOCX document.", "Download and edit the Word file."],
     faqs: [
-      ["Can every PDF become a perfect Word document?", "No. PDF to Word quality depends on how the PDF was created, fonts, layout complexity and whether the PDF is scanned."],
-      ["Do scanned PDFs need OCR?", "Yes. Scanned image-only PDFs need OCR before text can become editable."],
+      ["Is the text directly editable?", "No. Exact-layout mode stores each PDF page as an image inside DOCX. Use OCR separately when you need extracted text."],
+      ["Are radio buttons and form controls preserved?", "They remain visible in their original positions because the complete PDF page is rendered into the DOCX."],
     ],
   },
   [P.PDF_WORD]: {
-    intro: "Create editable Word files from PDF documents. Use PDF to Word when you need a DOCX output from a PDF file for editing, review or reuse.",
-    searches: ["pdf to word converter", "convert pdf to word", "pdf to docx online", "editable word from pdf", "pdf document to word"],
-    useCases: ["Make a PDF editable", "Extract text into DOCX", "Review and rewrite existing PDF documents"],
+    intro: "Create Word-compatible DOCX files that retain the visual appearance of PDF pages. Exact-layout mode prioritizes fonts, positions, images, colors and visible controls over editable text.",
+    searches: ["pdf to word converter", "convert pdf to word", "pdf to docx online", "layout preserving pdf to word", "pdf document to word"],
+    useCases: ["Open PDF pages in Word", "Preserve complex layouts", "Review page-accurate document copies"],
     steps: ["Select a PDF.", "Run conversion.", "Download the DOCX file."],
     faqs: [
-      ["Is the output editable?", "Text-based PDFs usually produce editable DOCX content. Scanned PDFs need OCR."],
-      ["Does it keep images?", "Images are preserved when the conversion engine can extract them from the PDF."],
+      ["Is the output editable?", "The current exact-layout output is image-based. It preserves appearance but does not make individual PDF text or controls editable."],
+      ["Does it keep images?", "Yes. Images and all other visible page content are preserved as part of the rendered page."],
     ],
   },
   [P.IMG]: {
@@ -867,6 +958,16 @@ const TOOL_SEO = {
     faqs: [
       ["Can transparent PNG files be converted?", "Yes. PNG files can be placed into a PDF."],
       ["Is PNG to PDF free?", "Yes. This browser tool is free to use."],
+    ],
+  },
+  [P.OCR]: {
+    intro: "Recognize text in scanned and image-only PDF pages directly in the browser. FileFlow renders each page, runs English OCR and downloads the recognized content as a TXT file.",
+    searches: ["ocr pdf", "scanned pdf to text", "extract text from scanned pdf", "pdf text recognition", "image pdf to text"],
+    useCases: ["Recover text from scanned forms", "Copy content from image-only PDFs", "Create searchable notes from scans"],
+    steps: ["Upload a scanned PDF.", "Run OCR while keeping this browser tab open.", "Download the extracted TXT file and review recognition accuracy."],
+    faqs: [
+      ["Does OCR upload my PDF?", "No. OCR processing runs in the browser after the recognition engine is downloaded."],
+      ["Which language is supported?", "The current OCR workflow recognizes English text. Clear, high-resolution scans produce the best results."],
     ],
   },
 };
@@ -1136,6 +1237,8 @@ function DropZone({ meta, onFiles }) {
     <div onDragOver={e => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)}
       onDrop={e => { e.preventDefault(); setDrag(false); if (e.dataTransfer.files.length) onFiles(Array.from(e.dataTransfer.files)); }}
       onClick={() => ref.current.click()}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); ref.current.click(); } }}
+      role="button" tabIndex={0} aria-label={`Upload ${meta.acceptLabel} files`}
       style={{
         border: `2px dashed ${drag ? meta.accent : "#CBD5E1"}`, borderRadius: T.radius.md,
         padding: "34px 22px", minHeight: 210, textAlign: "center", cursor: "pointer",
@@ -1144,7 +1247,11 @@ function DropZone({ meta, onFiles }) {
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       }}>
       <input ref={ref} type="file" accept={meta.accepts} multiple style={{ display: "none" }}
-        onChange={e => e.target.files.length && onFiles(Array.from(e.target.files))} />
+        onChange={e => {
+          const selected = Array.from(e.target.files || []);
+          e.target.value = "";
+          if (selected.length) onFiles(selected);
+        }} />
       <div style={{ width: 58, height: 58, borderRadius: T.radius.md, background: `${meta.accent}12`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", border: `1px solid ${meta.accent}18` }}>
         <Upload size={25} color={meta.accent} strokeWidth={2} />
       </div>
@@ -1158,7 +1265,8 @@ function DropZone({ meta, onFiles }) {
   );
 }
 
-function useBackendStatus(enabled) {
+function useBackendStatus(page) {
+  const enabled = BACKEND_PAGES.has(page);
   const [state, setState] = useState("checking");
   useEffect(() => {
     if (!enabled) return;
@@ -1166,8 +1274,15 @@ function useBackendStatus(enabled) {
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), 4500);
     fetch(`${API_BASE}/health`, { signal: controller.signal })
-      .then(response => {
-        if (!cancelled) setState(response.ok ? "online" : "offline");
+      .then(async response => {
+        if (!response.ok) throw new Error("Backend health check failed.");
+        const payload = await response.json();
+        const capability = page === P.COMPRESS
+          ? payload.capabilities?.compressPdf
+          : page === P.DOC || page === P.WORD_PDF
+            ? payload.capabilities?.documentToPdf
+            : payload.capabilities?.pdfToDocument;
+        if (!cancelled) setState(capability === false ? "unavailable" : "online");
       })
       .catch(() => {
         if (!cancelled) setState("offline");
@@ -1178,19 +1293,21 @@ function useBackendStatus(enabled) {
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [enabled]);
+  }, [enabled, page]);
   return state;
 }
 
 function BackendStatusBadge({ page }) {
   const enabled = BACKEND_PAGES.has(page);
-  const state = useBackendStatus(enabled);
+  const state = useBackendStatus(page);
   if (!enabled) return null;
   const tone = state === "online"
     ? { bg: "#ECFDF5", border: "#A7F3D0", text: "#047857", dot: "#10B981", label: "Converter online" }
     : state === "checking"
       ? { bg: "#F8FAFC", border: "#E2E8F0", text: "#64748B", dot: "#94A3B8", label: "Checking converter" }
-      : { bg: "#FFF7ED", border: "#FED7AA", text: "#C2410C", dot: "#F97316", label: "Converter waking up" };
+      : state === "unavailable"
+        ? { bg: "#FEF2F2", border: "#FECACA", text: "#B91C1C", dot: "#EF4444", label: "Converter feature unavailable" }
+        : { bg: "#FFF7ED", border: "#FED7AA", text: "#C2410C", dot: "#F97316", label: "Converter waking up" };
   return (
     <div style={{
       display: "inline-flex", alignItems: "center", gap: 8, marginTop: 14,
@@ -1285,9 +1402,12 @@ function ConverterPage({ meta, page }) {
   const { FromIcon, ToIcon } = meta;
 
   const addFiles = f => {
-    setStatus("idle"); setErrMsg("");
+    const { accepted, errors } = validateFiles(f, meta);
+    const validFiles = errors.length ? [] : accepted;
+    setStatus(errors.length ? "error" : "idle");
+    setErrMsg(errors.join(" "));
     setFiles(prev => {
-      const nextFiles = f.filter(nf => !prev.find(x => x.name === nf.name));
+      const nextFiles = validFiles.filter(nf => !prev.find(x => x.name === nf.name && x.size === nf.size));
       trackUploadedFiles(nextFiles.length);
       return [...prev, ...nextFiles];
     });
@@ -1434,11 +1554,12 @@ function SplitPdfPage() {
   const [errMsg, setErrMsg] = useState("");
 
   const addFiles = files => {
-    const nextFile = files.find(f => /\.pdf$/i.test(f.name)) || null;
+    const { accepted, errors } = validateFiles(files, meta, { multiple: false });
+    const nextFile = errors.length ? null : accepted[0] || null;
     setFile(nextFile);
     if (nextFile) trackUploadedFiles(1);
-    setStatus("idle");
-    setErrMsg("");
+    setStatus(errors.length ? "error" : "idle");
+    setErrMsg(errors.join(" "));
     setProgress(0);
   };
   const reset = () => {
@@ -1484,6 +1605,12 @@ function SplitPdfPage() {
       </div>
 
       {!file && <DropZone meta={meta} onFiles={addFiles} />}
+      {!file && errMsg && (
+        <div role="alert" style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 10, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: T.radius.md, padding: "12px 16px" }}>
+          <AlertCircle size={18} color="#DC2626" />
+          <span style={{ fontFamily: T.font.body, fontSize: 13.5, color: "#991B1B" }}>{errMsg}</span>
+        </div>
+      )}
 
       {file && status !== "done" && (
         <div style={{ display: "grid", gap: 16 }}>
@@ -1570,11 +1697,12 @@ function CompressPdfPage() {
   const [outputSize, setOutputSize] = useState(null);
 
   const addFiles = async files => {
-    const pdfFile = files.find(f => /\.pdf$/i.test(f.name)) || null;
+    const { accepted, errors } = validateFiles(files, meta, { multiple: false });
+    const pdfFile = errors.length ? null : accepted[0] || null;
     setFile(pdfFile);
     if (pdfFile) trackUploadedFiles(1);
-    setStatus("idle");
-    setErrMsg("");
+    setStatus(errors.length ? "error" : "idle");
+    setErrMsg(errors.join(" "));
     setOutputSize(null);
     setProgress(0);
     if (pdfFile) {
@@ -1626,6 +1754,12 @@ function CompressPdfPage() {
       </div>
 
       {!file && <DropZone meta={meta} onFiles={addFiles} />}
+      {!file && errMsg && (
+        <div role="alert" style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 10, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: T.radius.md, padding: "12px 16px" }}>
+          <AlertCircle size={18} color="#DC2626" />
+          <span style={{ fontFamily: T.font.body, fontSize: 13.5, color: "#991B1B" }}>{errMsg}</span>
+        </div>
+      )}
 
       {file && status !== "done" && (
         <div style={{ display: "grid", gap: 16 }}>
@@ -2309,7 +2443,7 @@ function HomePage({ go }) {
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 14 }}>
           {[
-            [P.PDF, "PDF to DOC converter", "Create editable Word DOCX files from PDF documents."],
+            [P.PDF, "PDF to DOC converter", "Create layout-preserving Word DOCX files from PDF documents."],
             [P.DOC, "DOC to PDF converter", "Convert DOC, DOCX, RTF, ODT and TXT files to PDF."],
             [P.MERGE, "Merge PDF files", "Combine multiple PDFs into one organized document."],
             [P.SPLIT, "Split PDF pages", "Extract all pages, selected pages or custom ranges."],
@@ -2328,8 +2462,8 @@ function HomePage({ go }) {
         <h2 style={{ fontFamily: T.font.display, fontWeight: 700, fontSize: "clamp(22px,4vw,34px)", color: T.color.dark, textAlign: "center", margin: "0 0 36px", letterSpacing: "-0.5px" }}>Why FileFlow?</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 18 }}>
           {[
-            { Icon: Zap, t: "Lightning Fast", d: "Conversion happens locally in your browser — no upload wait time.", c: T.color.accent.doc },
-            { Icon: Shield, t: "100% Private", d: "Your files never leave your device. Zero server contact.", c: T.color.accent.pdf },
+            { Icon: Zap, t: "Focused Workflows", d: "Browser tools run locally; document conversions use the configured converter service.", c: T.color.accent.doc },
+            { Icon: Shield, t: "Privacy Explained", d: "Each tool clearly identifies browser processing and backend conversion where required.", c: T.color.accent.pdf },
             { Icon: Gift, t: "Always Free", d: "No subscription, no watermarks, no file count limits.", c: T.color.accent.img },
             { Icon: Smartphone, t: "Works Everywhere", d: "Optimized for desktop, tablet and mobile browsers.", c: "#D97706" },
           ].map(({ Icon: Ic, t, d, c }) => (

@@ -12,4 +12,4 @@ services:
       - key: FILEFLOW_ALLOW_VERCEL_PREVIEWS
         value: "true"
       - key: FILEFLOW_ALLOWED_ORIGINS
-        sync: false
+        value: "https://file-flows.vercel.app"

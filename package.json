@@ -3,6 +3,8 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
+    "test:backend": "python -m unittest discover -s tests -v",
+    "check": "npm run build && npm run test:backend",
     "converter": "python server.py",
     "start": "python server.py"
   },

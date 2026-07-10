@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import shutil
 import tempfile
 import traceback
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -26,7 +27,8 @@ DOC_EXTENSIONS = {".doc", ".docx", ".rtf", ".odt", ".txt"}
 
 
 def safe_name(name):
-    base = Path(name or "converted.pdf").stem
+    base = Path((name or "converted.pdf").replace("\\", "/")).name
+    base = Path(base).stem
     base = re.sub(r"[^A-Za-z0-9._ -]+", "", base).strip(" .")
     return base or "converted"
 
@@ -36,10 +38,16 @@ def parse_multipart(body, content_type):
     if not match:
         raise ValueError("Missing multipart boundary.")
 
-    boundary = ("--" + match.group("boundary").strip('"')).encode()
-    for part in body.split(boundary):
-        part = part.strip()
-        if not part or part == b"--":
+    boundary_value = match.group("boundary").strip().strip('"')
+    if not boundary_value or len(boundary_value) > 200:
+        raise ValueError("Invalid multipart boundary.")
+    boundary = ("--" + boundary_value).encode("ascii", "strict")
+    for part in body.split(boundary)[1:]:
+        if part.startswith(b"--"):
+            break
+        if part.startswith(b"\r\n"):
+            part = part[2:]
+        if not part:
             continue
         header_blob, _, data = part.partition(b"\r\n\r\n")
         if not data:
@@ -47,15 +55,37 @@ def parse_multipart(body, content_type):
         headers = header_blob.decode("utf-8", "ignore")
         if 'name="file"' not in headers:
             continue
-        filename_match = re.search(r'filename="([^"]*)"', headers)
+        filename_match = re.search(r'filename="([^"]*)"', headers, re.IGNORECASE)
         filename = filename_match.group(1) if filename_match else "input.pdf"
         if data.endswith(b"\r\n"):
-            data = data[:-2]
-        if data.endswith(b"--"):
             data = data[:-2]
         return filename, data
 
     raise ValueError("No file field found.")
+
+
+def capabilities():
+    return {
+        "pdfToDocument": True,
+        "documentToPdf": bool(shutil.which("soffice") or shutil.which("libreoffice") or (os.name == "nt" and shutil.which("powershell"))),
+        "compressPdf": bool(shutil.which("gs") or shutil.which("gswin64c") or shutil.which("gswin32c")),
+    }
+
+
+def validate_file_content(route, suffix, data):
+    if not data:
+        raise ValueError("The uploaded file is empty.")
+    if route in {"/convert", "/compress-pdf"} and not data.lstrip()[:5] == b"%PDF-":
+        raise ValueError("The uploaded file is not a valid PDF.")
+    if route == "/convert-doc-pdf":
+        if suffix in {".docx", ".odt"} and not data.startswith(b"PK"):
+            raise ValueError("The uploaded document is invalid or damaged.")
+        if suffix == ".doc" and not data.startswith(b"\xd0\xcf\x11\xe0"):
+            raise ValueError("The uploaded DOC file is invalid or damaged.")
+        if suffix == ".rtf" and not data.lstrip().startswith(b"{\\rtf"):
+            raise ValueError("The uploaded RTF file is invalid or damaged.")
+        if suffix == ".txt" and b"\x00" in data[:8192]:
+            raise ValueError("The uploaded TXT file appears to be binary data.")
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -66,8 +96,12 @@ class Handler(BaseHTTPRequestHandler):
         if origin in ALLOWED_ORIGINS or is_vercel_preview:
             self.send_header("Access-Control-Allow-Origin", origin)
             self.send_header("Vary", "Origin")
-        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS, GET")
+        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS, GET, HEAD")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("Referrer-Policy", "no-referrer")
         super().end_headers()
 
     def do_OPTIONS(self):
@@ -84,10 +118,12 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path in {"/", "/health"}:
+            payload = json.dumps({"ok": True, "service": "fileflow-converter", "capabilities": capabilities()}).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(payload)))
             self.end_headers()
-            self.wfile.write(b'{"ok":true}')
+            self.wfile.write(payload)
             return
         self.send_error(404)
 
@@ -119,6 +155,7 @@ class Handler(BaseHTTPRequestHandler):
                     raise ValueError("Compress PDF accepts PDF files only.")
                 if route == "/convert-doc-pdf" and suffix not in DOC_EXTENSIONS:
                     raise ValueError("Document to PDF accepts DOC, DOCX, RTF, ODT and TXT files only.")
+                validate_file_content(route, suffix, pdf_bytes)
                 input_file = tmpdir / f"input{suffix}"
                 input_file.write_bytes(pdf_bytes)
 
