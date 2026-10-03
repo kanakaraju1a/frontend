@@ -1,8 +1,25 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+const adsenseScript = {
+  tag: "script",
+  attrs: {
+    async: true,
+    src: "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8906094330571360",
+    crossorigin: "anonymous",
+  },
+  injectTo: "head",
+};
+
+const injectAdsense = () => ({
+  name: "fileflow-adsense",
+  transformIndexHtml() {
+    return [adsenseScript];
+  },
+});
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), injectAdsense()],
   build: {
     rollupOptions: {
       input: {

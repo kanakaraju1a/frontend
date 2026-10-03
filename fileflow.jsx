@@ -2664,6 +2664,61 @@ function InfoPage({ page }) {
   );
 }
 
+function AdSenseBanner({ slot }) {
+  useEffect(() => {
+    try {
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch {
+      // Ad blockers and local development can prevent AdSense from loading.
+    }
+  }, []);
+
+  return (
+    <aside aria-label="Advertisement" style={{ width: "100%", padding: "18px 16px", background: T.color.bg }}>
+      <div style={{ maxWidth: 1080, minHeight: 100, margin: "0 auto", overflow: "hidden" }}>
+        <ins
+          className="adsbygoogle"
+          style={{ display: "block" }}
+          data-ad-client="ca-pub-8906094330571360"
+          data-ad-slot={slot}
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        />
+      </div>
+    </aside>
+  );
+}
+
+function AdSenseSideRail({ slot, side }) {
+  useEffect(() => {
+    try {
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch {
+      // Ad blockers and local development can prevent AdSense from loading.
+    }
+  }, []);
+
+  return (
+    <aside
+      className={`ff-side-ad ff-side-ad-${side}`}
+      aria-label={`${side === "left" ? "Left" : "Right"} advertisement`}
+      style={{
+        display: "none", position: "fixed", top: 88, zIndex: 40,
+        width: 160, minHeight: 600, overflow: "hidden",
+      }}
+    >
+      <ins
+        className="adsbygoogle"
+        style={{ display: "block", width: 160, minHeight: 600 }}
+        data-ad-client="ca-pub-8906094330571360"
+        data-ad-slot={slot}
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      />
+    </aside>
+  );
+}
+
 function Footer({ go }) {
   const year = new Date().getFullYear();
   return (
@@ -2809,12 +2864,21 @@ export default function App() {
         @media(max-width:640px){.ff-desk-nav{display:none!important;}.ff-ham{display:flex!important;}.ff-bottom-tabs{display:block!important;}body{padding-bottom:78px;}.ff-pdf-editor-grid{grid-template-columns:1fr!important;}}
         @media(min-width:641px){.ff-mob-menu{display:none!important;}.ff-bottom-tabs{display:none!important;}}
         @media(max-width:980px){.ff-pdf-editor-grid{grid-template-columns:1fr!important;}}
+        @media(min-width:1440px){
+          .ff-side-ad{display:block!important;}
+          .ff-side-ad-left{left:max(12px,calc((100vw - 1080px)/2 - 176px));}
+          .ff-side-ad-right{right:max(12px,calc((100vw - 1080px)/2 - 176px));}
+        }
         button{transition:opacity .15s;}button:active{opacity:.8;}
       `}</style>
       {showSplash && <SplashScreen />}
       <Header page={page} go={go} />
       <Crumb page={page} go={go} />
+      <AdSenseSideRail key={`${page}-left-ad`} side="left" slot="8291573428" />
+      <AdSenseSideRail key={`${page}-right-ad`} side="right" slot="3721687300" />
+      <AdSenseBanner key={`${page}-top-ad`} slot="3230818438" />
       <main style={{ flex: 1 }}>{renderPage()}</main>
+      <AdSenseBanner key={`${page}-bottom-ad`} slot="5034768976" />
       <Footer go={go} />
       <MobileBottomTabs page={page} go={go} />
     </div>
