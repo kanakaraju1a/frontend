@@ -2664,19 +2664,53 @@ function InfoPage({ page }) {
   );
 }
 
-function AdSenseBanner({ slot }) {
+function useAdSenseUnit() {
+  const adRef = useRef(null);
+  const [adStatus, setAdStatus] = useState("pending");
+
   useEffect(() => {
+    const element = adRef.current;
+    if (!element) return undefined;
+
+    const syncStatus = () => {
+      const nextStatus = element.getAttribute("data-ad-status");
+      if (nextStatus === "filled") setAdStatus("filled");
+      if (nextStatus === "unfilled") setAdStatus("hidden");
+    };
+    const observer = new MutationObserver(syncStatus);
+    observer.observe(element, { attributes: true, attributeFilter: ["data-ad-status"] });
+
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch {
-      // Ad blockers and local development can prevent AdSense from loading.
+      setAdStatus("hidden");
     }
+
+    const fallback = window.setTimeout(() => {
+      if (element.getAttribute("data-ad-status") !== "filled") setAdStatus("hidden");
+    }, 10000);
+
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(fallback);
+    };
   }, []);
 
+  return { adRef, adStatus };
+}
+
+function AdSenseBanner({ slot }) {
+  const { adRef, adStatus } = useAdSenseUnit();
+  if (adStatus === "hidden") return null;
+
   return (
-    <aside aria-label="Advertisement" style={{ width: "100%", padding: "18px 16px", background: T.color.bg }}>
-      <div style={{ maxWidth: 1080, minHeight: 100, margin: "0 auto", overflow: "hidden" }}>
+    <aside aria-label="Advertisement" style={{
+      width: "100%", padding: adStatus === "filled" ? "18px 16px" : 0,
+      background: T.color.bg, transition: "padding .2s ease",
+    }}>
+      <div style={{ maxWidth: 1080, minHeight: adStatus === "filled" ? 100 : 0, margin: "0 auto", overflow: "hidden" }}>
         <ins
+          ref={adRef}
           className="adsbygoogle"
           style={{ display: "block" }}
           data-ad-client="ca-pub-8906094330571360"
@@ -2690,13 +2724,8 @@ function AdSenseBanner({ slot }) {
 }
 
 function AdSenseSideRail({ slot, side }) {
-  useEffect(() => {
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch {
-      // Ad blockers and local development can prevent AdSense from loading.
-    }
-  }, []);
+  const { adRef, adStatus } = useAdSenseUnit();
+  if (adStatus === "hidden") return null;
 
   return (
     <aside
@@ -2708,6 +2737,7 @@ function AdSenseSideRail({ slot, side }) {
       }}
     >
       <ins
+        ref={adRef}
         className="adsbygoogle"
         style={{ display: "block", width: 160, minHeight: 600 }}
         data-ad-client="ca-pub-8906094330571360"
