@@ -32,6 +32,7 @@ export default defineConfig({
         pdfToJpg: "pdf-to-jpg/index.html",
         jpgToPdf: "jpg-to-pdf/index.html",
         pngToPdf: "png-to-pdf/index.html",
+        imageConverter: "image-converter/index.html",
         mergePdf: "merge-pdf/index.html",
         splitPdf: "split-pdf/index.html",
         compressPdf: "compress-pdf/index.html",

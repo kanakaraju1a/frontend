@@ -8,6 +8,7 @@ const APP_SHELL = [
   "/doc-to-pdf/",
   "/compress-pdf/",
   "/pdf-editor/",
+  "/image-converter/",
 ];
 
 self.addEventListener("install", event => {

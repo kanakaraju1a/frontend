@@ -89,6 +89,53 @@ function downloadBlob(blob, filename) {
   }, 1000);
 }
 
+function formatFileSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+async function convertImageFormat(file, { format, quality, maxDimension, background }) {
+  const sourceUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise((resolve, reject) => {
+      const element = new window.Image();
+      element.onload = () => resolve(element);
+      element.onerror = () => reject(new Error(`${file.name} could not be decoded by this browser.`));
+      element.src = sourceUrl;
+    });
+
+    const scale = maxDimension > 0
+      ? Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight))
+      : 1;
+    const width = Math.max(1, Math.round(image.naturalWidth * scale));
+    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d", { alpha: format !== "jpeg" });
+    if (!context) throw new Error("Image conversion is unavailable in this browser.");
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
+    if (format === "jpeg") {
+      context.fillStyle = background;
+      context.fillRect(0, 0, width, height);
+    }
+    context.drawImage(image, 0, 0, width, height);
+
+    const mimeType = `image/${format}`;
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, mimeType, format === "png" ? undefined : quality / 100));
+    canvas.width = 1;
+    canvas.height = 1;
+    if (!blob || (format !== "png" && blob.type !== mimeType)) {
+      throw new Error(`${format.toUpperCase()} export is not supported by this browser.`);
+    }
+    return { blob, width, height };
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
+
 const FILEFLOW_UPLOAD_COUNT_KEY = "fileflow_uploaded_count";
 
 function getUploadedCount() {
@@ -497,7 +544,7 @@ const SITE_URL = "https://file-flows.vercel.app";
 
 const P = {
   HOME: "home", DOC: "doc-to-pdf", WORD_PDF: "word-to-pdf", PDF: "pdf-to-doc", PDF_WORD: "pdf-to-word", IMG: "img-to-pdf",
-  PDF_TO_JPG: "pdf-to-jpg", JPG_TO_PDF: "jpg-to-pdf", PNG_TO_PDF: "png-to-pdf",
+  PDF_TO_JPG: "pdf-to-jpg", JPG_TO_PDF: "jpg-to-pdf", PNG_TO_PDF: "png-to-pdf", IMAGE_CONVERTER: "image-converter",
   MERGE: "merge-pdf", SPLIT: "split-pdf", COMPRESS: "compress-pdf", EDITOR: "pdf-editor", OCR: "ocr-pdf",
   FAQ: "faq", ABOUT: "about", CONTACT: "contact", PRIVACY: "privacy-policy",
   TERMS: "terms", SECURITY: "security", FORMATS: "supported-formats", QUALITY: "conversion-quality",
@@ -515,6 +562,7 @@ const PAGE_PATH = {
   [P.PDF_TO_JPG]: "/pdf-to-jpg/",
   [P.JPG_TO_PDF]: "/jpg-to-pdf/",
   [P.PNG_TO_PDF]: "/png-to-pdf/",
+  [P.IMAGE_CONVERTER]: "/image-converter/",
   [P.MERGE]: "/merge-pdf/",
   [P.SPLIT]: "/split-pdf/",
   [P.COMPRESS]: "/compress-pdf/",
@@ -549,6 +597,8 @@ const PATH_PAGE = {
   "/jpg-to-pdf/": P.JPG_TO_PDF,
   "/png-to-pdf": P.PNG_TO_PDF,
   "/png-to-pdf/": P.PNG_TO_PDF,
+  "/image-converter": P.IMAGE_CONVERTER,
+  "/image-converter/": P.IMAGE_CONVERTER,
   "/merge-pdf": P.MERGE,
   "/merge-pdf/": P.MERGE,
   "/split-pdf": P.SPLIT,
@@ -587,6 +637,7 @@ const PAGE_LABEL = {
   [P.PDF_TO_JPG]: "PDF to JPG",
   [P.JPG_TO_PDF]: "JPG to PDF",
   [P.PNG_TO_PDF]: "PNG to PDF",
+  [P.IMAGE_CONVERTER]: "Image Converter",
   [P.MERGE]: "Merge PDF",
   [P.SPLIT]: "Split PDF",
   [P.COMPRESS]: "Compress PDF",
@@ -638,6 +689,10 @@ const SEO = {
   [P.PNG_TO_PDF]: {
     title: "PNG to PDF Converter - Convert PNG Images to PDF | FileFlow",
     description: "Convert PNG images into a shareable PDF file with FileFlow. Free PNG to PDF conversion for screenshots, forms and documents.",
+  },
+  [P.IMAGE_CONVERTER]: {
+    title: "Image Converter - Convert and Compress JPG, PNG, WebP | FileFlow",
+    description: "Convert images to JPG, PNG or WebP and compress them with adjustable quality. Free private batch image converter for common image formats.",
   },
   [P.MERGE]: {
     title: "Merge PDF - Combine PDF Files Online | FileFlow",
@@ -703,6 +758,7 @@ const SEO_KEYWORDS = {
   [P.PDF_TO_JPG]: "pdf to jpg, convert pdf to image, pdf pages to jpg, extract jpg from pdf, pdf to photo, pdf image converter",
   [P.JPG_TO_PDF]: "jpg to pdf, jpeg to pdf, image to pdf, photo to pdf, convert jpg images to pdf, jpg pdf converter",
   [P.PNG_TO_PDF]: "png to pdf, convert png to pdf, screenshot to pdf, png image to pdf, image to pdf converter",
+  [P.IMAGE_CONVERTER]: "image converter, convert image format, jpg to png, png to jpg, image to webp, compress image, reduce image size, batch image converter",
   [P.MERGE]: "merge pdf, combine pdf files, join pdf online, merge multiple pdfs, combine pdf pages, free pdf merger",
   [P.SPLIT]: "split pdf, extract pdf pages, separate pdf pages, split pdf by range, save selected pdf pages, pdf splitter",
   [P.COMPRESS]: "compress pdf, reduce pdf size, make pdf smaller, pdf compressor, compress pdf to smaller file, reduce scanned pdf size",
@@ -828,6 +884,7 @@ const TOOLS = [
   { page: P.PDF_TO_JPG, Icon: Image, label: "PDF to JPG", desc: "Export page images", accent: T.color.accent.img },
   { page: P.JPG_TO_PDF, Icon: Image, label: "JPG to PDF", desc: "Convert JPG images", accent: T.color.accent.img },
   { page: P.PNG_TO_PDF, Icon: Image, label: "PNG to PDF", desc: "Convert PNG images", accent: T.color.accent.img },
+  { page: P.IMAGE_CONVERTER, Icon: Image, label: "Image Converter", desc: "Convert and compress images", accent: T.color.accent.img },
 ];
 
 const FAQ_DATA = [
@@ -958,6 +1015,17 @@ const TOOL_SEO = {
     faqs: [
       ["Can transparent PNG files be converted?", "Yes. PNG files can be placed into a PDF."],
       ["Is PNG to PDF free?", "Yes. This browser tool is free to use."],
+    ],
+  },
+  [P.IMAGE_CONVERTER]: {
+    intro: "Convert photos, graphics and screenshots to JPG, PNG or WebP, then control the balance between visual quality and file size. Processing stays in the browser and supports batch conversion without uploading images to a server.",
+    searches: ["image converter", "jpg to png", "png to jpg", "image to webp", "compress image", "reduce image size"],
+    useCases: ["Create smaller images for websites", "Change image formats for compatibility", "Batch-convert photos and screenshots"],
+    steps: ["Upload one or more supported images.", "Choose JPG, PNG or WebP and adjust quality or dimensions.", "Convert the images and download each optimized result."],
+    faqs: [
+      ["Which image formats can I upload?", "FileFlow accepts JPG, JPEG, PNG, WebP, GIF, BMP and AVIF when your browser can decode them. Animated images are converted using their first displayed frame."],
+      ["Which output format gives the smallest file?", "WebP commonly gives the best balance of size and quality. JPG is widely compatible for photos, while PNG is lossless and best for graphics or transparency."],
+      ["Are my images uploaded?", "No. Image conversion and compression happen locally in your browser."],
     ],
   },
   [P.OCR]: {
@@ -1161,7 +1229,7 @@ function Header({ page, go }) {
     { label: "Doc → PDF", p: P.DOC }, { label: "PDF → Doc", p: P.PDF },
     { label: "Merge", p: P.MERGE }, { label: "Split", p: P.SPLIT },
     { label: "Compress", p: P.COMPRESS }, { label: "PDF Editor", p: P.EDITOR }, { label: "PDF → JPG", p: P.PDF_TO_JPG },
-    { label: "Image → PDF", p: P.IMG }, { label: "OCR", p: P.OCR },
+    { label: "Image → PDF", p: P.IMG }, { label: "Images", p: P.IMAGE_CONVERTER }, { label: "OCR", p: P.OCR },
   ];
   const mobileLinks = [
     { label: "Home", p: P.HOME, Icon: Home },
@@ -1176,6 +1244,7 @@ function Header({ page, go }) {
     { label: "JPG to PDF", p: P.JPG_TO_PDF, Icon: Image },
     { label: "PNG to PDF", p: P.PNG_TO_PDF, Icon: Image },
     { label: "Image to PDF", p: P.IMG, Icon: Image },
+    { label: "Image Converter", p: P.IMAGE_CONVERTER, Icon: Image },
     { label: "OCR PDF", p: P.OCR, Icon: FileText },
     { label: "FAQ", p: P.FAQ, Icon: HelpCircle },
   ];
@@ -1538,6 +1607,186 @@ function ConverterPage({ meta, page }) {
         </div>
       </div>
       <ToolSeoSection page={page} accent={meta.accent} />
+    </div>
+  );
+}
+
+function ImageConverterPage() {
+  const meta = {
+    accepts: ".jpg,.jpeg,.png,.webp,.gif,.bmp,.avif",
+    acceptLabel: "JPG, PNG, WebP, GIF, BMP, AVIF",
+    accent: T.color.accent.img,
+  };
+  const [files, setFiles] = useState([]);
+  const [format, setFormat] = useState("webp");
+  const [quality, setQuality] = useState(90);
+  const [resizeEnabled, setResizeEnabled] = useState(false);
+  const [maxDimension, setMaxDimension] = useState(1920);
+  const [background, setBackground] = useState("#ffffff");
+  const [status, setStatus] = useState("idle");
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState("");
+  const [results, setResults] = useState([]);
+
+  const clearResults = useCallback(() => {
+    setResults(previous => {
+      previous.forEach(result => URL.revokeObjectURL(result.previewUrl));
+      return [];
+    });
+  }, []);
+
+  useEffect(() => () => {
+    results.forEach(result => URL.revokeObjectURL(result.previewUrl));
+  }, [results]);
+
+  const addFiles = incoming => {
+    const { accepted, errors } = validateFiles(incoming, meta);
+    const existing = new Set(files.map(file => `${file.name}:${file.size}:${file.lastModified}`));
+    const unique = accepted.filter(file => !existing.has(`${file.name}:${file.size}:${file.lastModified}`));
+    if (unique.length) {
+      clearResults();
+      setFiles(previous => [...previous, ...unique]);
+      trackUploadedFiles(unique.length);
+      setStatus("idle");
+    }
+    setError(errors.join(" "));
+  };
+
+  const removeFile = index => {
+    clearResults();
+    setFiles(previous => previous.filter((_, fileIndex) => fileIndex !== index));
+    setStatus("idle");
+  };
+
+  const convert = async () => {
+    if (!files.length) return;
+    clearResults();
+    setStatus("converting");
+    setProgress(0);
+    setError("");
+    const converted = [];
+    try {
+      for (let index = 0; index < files.length; index += 1) {
+        const file = files[index];
+        const output = await convertImageFormat(file, {
+          format,
+          quality,
+          maxDimension: resizeEnabled ? Math.max(64, Number(maxDimension) || 1920) : 0,
+          background,
+        });
+        const extension = format === "jpeg" ? "jpg" : format;
+        const baseName = file.name.replace(/\.[^.]+$/, "") || "converted-image";
+        converted.push({
+          ...output,
+          source: file,
+          filename: `${baseName}.${extension}`,
+          previewUrl: URL.createObjectURL(output.blob),
+        });
+        setProgress(Math.round(((index + 1) / files.length) * 100));
+      }
+      setResults(converted);
+      setStatus("done");
+    } catch (conversionError) {
+      converted.forEach(result => URL.revokeObjectURL(result.previewUrl));
+      setError(conversionError?.message || "Image conversion failed. Try another image or output format.");
+      setStatus("error");
+    }
+  };
+
+  const reset = () => {
+    clearResults();
+    setFiles([]);
+    setStatus("idle");
+    setProgress(0);
+    setError("");
+  };
+
+  const settingLabel = { fontFamily: T.font.body, fontWeight: 700, fontSize: 13, color: T.color.dark };
+
+  return (
+    <div style={{ maxWidth: 860, margin: "0 auto", padding: "54px 20px 72px" }}>
+      <div style={{ textAlign: "center", marginBottom: 30 }}>
+        <div style={{ width: 58, height: 58, borderRadius: T.radius.md, background: `${meta.accent}12`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", border: `1px solid ${meta.accent}20` }}>
+          <Image size={27} color={meta.accent} strokeWidth={1.9} />
+        </div>
+        <h1 style={{ fontFamily: T.font.display, fontWeight: 700, fontSize: "clamp(34px,6vw,52px)", lineHeight: 1.05, color: T.color.dark, margin: "0 0 12px", letterSpacing: 0 }}>Image Converter</h1>
+        <p style={{ fontFamily: T.font.body, fontSize: 16, color: T.color.mid, lineHeight: 1.65, margin: "0 auto", maxWidth: 620 }}>Convert images to JPG, PNG or WebP and compress them with high-quality browser processing.</p>
+        <p style={{ fontFamily: T.font.body, fontSize: 12.5, color: "#047857", fontWeight: 700, margin: "10px 0 0" }}><Shield size={14} style={{ verticalAlign: "-2px", marginRight: 5 }} />Private: images never leave your device</p>
+      </div>
+
+      <DropZone meta={meta} onFiles={addFiles} />
+
+      {files.length > 0 && (
+        <div style={{ marginTop: 18, display: "grid", gap: 9 }}>
+          {files.map((file, index) => <FileRow key={`${file.name}-${file.lastModified}`} file={file} meta={meta} status={status === "converting" ? "converting" : "idle"} onRemove={() => removeFile(index)} />)}
+        </div>
+      )}
+
+      {files.length > 0 && status !== "done" && (
+        <section style={{ marginTop: 20, background: T.color.surface, border: `1px solid ${T.color.border}`, borderRadius: T.radius.md, padding: 20, display: "grid", gap: 22 }}>
+          <div>
+            <p style={{ ...settingLabel, margin: "0 0 10px" }}>Output format</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+              {[{ value: "jpeg", label: "JPG", note: "Photos" }, { value: "png", label: "PNG", note: "Lossless" }, { value: "webp", label: "WebP", note: "Smallest" }].map(option => (
+                <button key={option.value} type="button" onClick={() => setFormat(option.value)} style={{ minHeight: 62, border: `1.5px solid ${format === option.value ? meta.accent : T.color.border}`, borderRadius: T.radius.sm, background: format === option.value ? `${meta.accent}0D` : "#fff", color: T.color.dark, cursor: "pointer", fontFamily: T.font.body }}>
+                  <strong style={{ display: "block", fontSize: 14 }}>{option.label}</strong>
+                  <span style={{ fontSize: 11.5, color: T.color.muted }}>{option.note}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ opacity: format === "png" ? 0.55 : 1 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
+              <label htmlFor="image-quality" style={settingLabel}>Compression quality</label>
+              <strong style={{ fontFamily: T.font.body, fontSize: 13, color: meta.accent }}>{format === "png" ? "Lossless" : `${quality}%`}</strong>
+            </div>
+            <input id="image-quality" type="range" min="20" max="100" step="1" value={quality} disabled={format === "png"} onChange={event => setQuality(Number(event.target.value))} style={{ width: "100%", accentColor: meta.accent }} />
+            <div style={{ display: "flex", justifyContent: "space-between", fontFamily: T.font.body, fontSize: 11.5, color: T.color.muted, marginTop: 4 }}><span>Smaller file</span><span>Best quality</span></div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))", gap: 16 }}>
+            <label style={{ display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer" }}>
+              <input type="checkbox" checked={resizeEnabled} onChange={event => setResizeEnabled(event.target.checked)} style={{ marginTop: 3, accentColor: meta.accent }} />
+              <span><strong style={{ ...settingLabel, display: "block" }}>Limit image dimensions</strong><span style={{ fontFamily: T.font.body, fontSize: 12, color: T.color.muted }}>Reduces large photos more</span></span>
+            </label>
+            {resizeEnabled && <label style={settingLabel}>Maximum width or height
+              <input type="number" min="64" max="12000" step="64" value={maxDimension} onChange={event => setMaxDimension(event.target.value)} style={{ width: "100%", marginTop: 7, border: `1px solid ${T.color.border}`, borderRadius: T.radius.sm, padding: "10px 12px", fontFamily: T.font.body, fontSize: 14 }} />
+            </label>}
+            {format === "jpeg" && <label style={settingLabel}>Transparent area color
+              <input type="color" value={background} onChange={event => setBackground(event.target.value)} style={{ display: "block", width: "100%", height: 40, marginTop: 7, border: `1px solid ${T.color.border}`, borderRadius: T.radius.sm, background: "#fff", cursor: "pointer" }} />
+            </label>}
+          </div>
+        </section>
+      )}
+
+      {error && <div role="alert" style={{ marginTop: 16, padding: "12px 14px", borderRadius: T.radius.sm, background: "#FEF2F2", border: "1px solid #FECACA", color: "#B91C1C", fontFamily: T.font.body, fontSize: 13.5 }}><AlertCircle size={16} style={{ verticalAlign: "-3px", marginRight: 7 }} />{error}</div>}
+
+      {status === "converting" && <div style={{ marginTop: 20 }}><div style={{ height: 8, borderRadius: 99, background: "#E2E8F0", overflow: "hidden" }}><div style={{ width: `${progress}%`, height: "100%", background: meta.accent, transition: "width .2s" }} /></div><p style={{ textAlign: "center", fontFamily: T.font.body, fontSize: 13, color: T.color.mid }}>{progress}% converted</p></div>}
+
+      {(status === "idle" || status === "error") && files.length > 0 && <button type="button" onClick={convert} style={{ marginTop: 20, width: "100%", background: meta.accent, color: "#fff", border: "none", borderRadius: T.radius.md, padding: 15, fontFamily: T.font.body, fontWeight: 700, fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Zap size={17} />Convert {files.length} Image{files.length > 1 ? "s" : ""}</button>}
+
+      {status === "done" && (
+        <section style={{ marginTop: 22, background: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: T.radius.md, padding: 20 }}>
+          <h2 style={{ fontFamily: T.font.display, fontSize: 26, color: T.color.dark, margin: "0 0 14px" }}>Images ready</h2>
+          <div style={{ display: "grid", gap: 10 }}>
+            {results.map(result => {
+              const saved = result.source.size > 0 ? Math.round((1 - result.blob.size / result.source.size) * 100) : 0;
+              return <div key={result.filename} style={{ display: "flex", alignItems: "center", gap: 12, background: "#fff", border: "1px solid #D1FAE5", borderRadius: T.radius.sm, padding: 10 }}>
+                <img src={result.previewUrl} alt="" style={{ width: 52, height: 52, objectFit: "cover", borderRadius: 6, background: "#F8FAFC", flexShrink: 0 }} />
+                <div style={{ flex: 1, minWidth: 0 }}><strong style={{ display: "block", fontFamily: T.font.body, fontSize: 13.5, color: T.color.dark, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{result.filename}</strong><span style={{ fontFamily: T.font.body, fontSize: 11.5, color: T.color.muted }}>{result.width} × {result.height} · {formatFileSize(result.blob.size)}{saved > 0 ? ` · ${saved}% smaller` : ""}</span></div>
+                <button type="button" title={`Download ${result.filename}`} aria-label={`Download ${result.filename}`} onClick={() => downloadBlob(result.blob, result.filename)} style={{ width: 40, height: 40, border: "none", borderRadius: T.radius.sm, background: T.color.dark, color: "#fff", display: "grid", placeItems: "center", cursor: "pointer", flexShrink: 0 }}><Download size={17} /></button>
+              </div>;
+            })}
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16 }}>
+            <button type="button" onClick={() => results.forEach((result, index) => window.setTimeout(() => downloadBlob(result.blob, result.filename), index * 180))} style={{ flex: "1 1 180px", border: "none", borderRadius: T.radius.sm, background: meta.accent, color: "#fff", padding: "12px 16px", fontFamily: T.font.body, fontWeight: 700, cursor: "pointer" }}><Download size={16} style={{ verticalAlign: "-3px", marginRight: 7 }} />Download all</button>
+            <button type="button" onClick={reset} style={{ flex: "1 1 180px", border: `1px solid ${T.color.border}`, borderRadius: T.radius.sm, background: "#fff", color: T.color.dark, padding: "12px 16px", fontFamily: T.font.body, fontWeight: 700, cursor: "pointer" }}><RotateCcw size={16} style={{ verticalAlign: "-3px", marginRight: 7 }} />Convert more</button>
+          </div>
+        </section>
+      )}
+
+      <ToolSeoSection page={P.IMAGE_CONVERTER} accent={meta.accent} />
     </div>
   );
 }
@@ -2766,7 +3015,7 @@ function Footer({ go }) {
           </div>
           <div>
             <p style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 11, color: "rgba(255,255,255,0.35)", marginBottom: 14, textTransform: "uppercase", letterSpacing: 1.2 }}>Tools</p>
-            {[{ l: "Document to PDF", p: P.DOC }, { l: "PDF to Document", p: P.PDF }, { l: "Merge PDF", p: P.MERGE }, { l: "Compress PDF", p: P.COMPRESS }, { l: "PDF Editor", p: P.EDITOR }, { l: "PDF to JPG", p: P.PDF_TO_JPG }].map(({ l, p }) => (
+            {[{ l: "Document to PDF", p: P.DOC }, { l: "PDF to Document", p: P.PDF }, { l: "Merge PDF", p: P.MERGE }, { l: "Compress PDF", p: P.COMPRESS }, { l: "PDF Editor", p: P.EDITOR }, { l: "PDF to JPG", p: P.PDF_TO_JPG }, { l: "Image Converter", p: P.IMAGE_CONVERTER }].map(({ l, p }) => (
               <PageLink key={p} page={p} go={go} style={{ display: "block", fontFamily: T.font.body, fontSize: 13.5, color: "rgba(255,255,255,0.45)", margin: "0 0 10px", cursor: "pointer" }}>{l}</PageLink>
             ))}
           </div>
@@ -2878,6 +3127,7 @@ export default function App() {
     if (page === P.SPLIT) return <SplitPdfPage />;
     if (page === P.COMPRESS) return <CompressPdfPage />;
     if (page === P.EDITOR) return <PdfEditorPage />;
+    if (page === P.IMAGE_CONVERTER) return <ImageConverterPage />;
     if (META[page]) return <ConverterPage meta={META[page]} page={page} />;
     return <HomePage go={go} />;
   };
