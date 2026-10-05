@@ -1040,6 +1040,23 @@ const TOOL_SEO = {
   },
 };
 
+const RELATED_TOOL_PAGES = {
+  [P.DOC]: [P.WORD_PDF, P.PDF, P.MERGE, P.COMPRESS],
+  [P.WORD_PDF]: [P.DOC, P.PDF_WORD, P.MERGE, P.COMPRESS],
+  [P.PDF]: [P.PDF_WORD, P.DOC, P.OCR, P.EDITOR],
+  [P.PDF_WORD]: [P.PDF, P.WORD_PDF, P.OCR, P.EDITOR],
+  [P.IMG]: [P.IMAGE_CONVERTER, P.JPG_TO_PDF, P.PNG_TO_PDF, P.PDF_TO_JPG],
+  [P.IMAGE_CONVERTER]: [P.IMG, P.PDF_TO_JPG, P.JPG_TO_PDF, P.PNG_TO_PDF],
+  [P.PDF_TO_JPG]: [P.IMAGE_CONVERTER, P.IMG, P.JPG_TO_PDF, P.PNG_TO_PDF],
+  [P.JPG_TO_PDF]: [P.IMG, P.IMAGE_CONVERTER, P.PNG_TO_PDF, P.PDF_TO_JPG],
+  [P.PNG_TO_PDF]: [P.IMG, P.IMAGE_CONVERTER, P.JPG_TO_PDF, P.PDF_TO_JPG],
+  [P.MERGE]: [P.SPLIT, P.COMPRESS, P.EDITOR, P.DOC],
+  [P.SPLIT]: [P.MERGE, P.COMPRESS, P.EDITOR, P.PDF_TO_JPG],
+  [P.COMPRESS]: [P.MERGE, P.SPLIT, P.EDITOR, P.DOC],
+  [P.EDITOR]: [P.MERGE, P.SPLIT, P.COMPRESS, P.PDF_TO_JPG],
+  [P.OCR]: [P.PDF, P.PDF_WORD, P.PDF_TO_JPG, P.EDITOR],
+};
+
 function pageUrl(page) {
   return `${SITE_URL}${PAGE_PATH[page] || "/"}`;
 }
@@ -1139,6 +1156,19 @@ function buildSchemas(page) {
       name: `How to use ${label}`,
       description: toolSeo.intro,
       step: toolSeo.steps.map((text, index) => ({ "@type": "HowToStep", position: index + 1, text })),
+    });
+  }
+  if (RELATED_TOOL_PAGES[page]?.length) {
+    schemas.push({
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: `Related ${label} tools`,
+      itemListElement: RELATED_TOOL_PAGES[page].map((relatedPage, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: PAGE_LABEL[relatedPage],
+        url: pageUrl(relatedPage),
+      })),
     });
   }
   if (toolSeo?.faqs?.length || page === P.FAQ) {
@@ -1416,6 +1446,7 @@ function FileRow({ file, meta, onRemove, status }) {
 function ToolSeoSection({ page, accent }) {
   const content = TOOL_SEO[page];
   if (!content) return null;
+  const relatedPages = RELATED_TOOL_PAGES[page] || [];
   return (
     <section style={{ marginTop: 46, display: "grid", gap: 16 }}>
       <div style={{ background: T.color.surface, border: `1px solid ${T.color.border}`, borderRadius: T.radius.md, padding: 20 }}>
@@ -1448,6 +1479,19 @@ function ToolSeoSection({ page, accent }) {
             </div>
           )}
         </div>
+      )}
+      {relatedPages.length > 0 && (
+        <nav aria-label={`Related ${PAGE_LABEL[page]} tools`} style={{ background: T.color.surface, border: `1px solid ${T.color.border}`, borderRadius: T.radius.md, padding: 20 }}>
+          <h2 style={{ fontFamily: T.font.display, fontWeight: 700, fontSize: 23, color: T.color.dark, margin: "0 0 8px" }}>Related conversion tools</h2>
+          <p style={{ fontFamily: T.font.body, fontSize: 13.5, color: T.color.mid, lineHeight: 1.6, margin: "0 0 14px" }}>Continue your file workflow with these closely related converters.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(170px,1fr))", gap: 9 }}>
+            {relatedPages.map(relatedPage => (
+              <a key={relatedPage} href={PAGE_PATH[relatedPage]} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, minHeight: 44, padding: "10px 12px", border: `1px solid ${T.color.border}`, borderRadius: T.radius.sm, color: T.color.dark, background: "#fff", textDecoration: "none", fontFamily: T.font.body, fontWeight: 700, fontSize: 13 }}>
+                <span>{PAGE_LABEL[relatedPage]}</span><ChevronRight size={15} color={accent} />
+              </a>
+            ))}
+          </div>
+        </nav>
       )}
       <div style={{ background: T.color.surface, border: `1px solid ${T.color.border}`, borderRadius: T.radius.md, padding: 20 }}>
         <h2 style={{ fontFamily: T.font.display, fontWeight: 700, fontSize: 23, color: T.color.dark, margin: "0 0 14px" }}>{PAGE_LABEL[page]} FAQ</h2>
