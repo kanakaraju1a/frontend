@@ -1226,13 +1226,15 @@ function PageLink({ page, go, children, style, className, onClick, ...props }) {
 function Header({ page, go }) {
   const [open, setOpen] = useState(false);
   const navLinks = [
+    { label: "Images", p: P.IMAGE_CONVERTER },
     { label: "Doc → PDF", p: P.DOC }, { label: "PDF → Doc", p: P.PDF },
     { label: "Merge", p: P.MERGE }, { label: "Split", p: P.SPLIT },
     { label: "Compress", p: P.COMPRESS }, { label: "PDF Editor", p: P.EDITOR }, { label: "PDF → JPG", p: P.PDF_TO_JPG },
-    { label: "Image → PDF", p: P.IMG }, { label: "Images", p: P.IMAGE_CONVERTER }, { label: "OCR", p: P.OCR },
+    { label: "Image → PDF", p: P.IMG }, { label: "OCR", p: P.OCR },
   ];
   const mobileLinks = [
     { label: "Home", p: P.HOME, Icon: Home },
+    { label: "Image Converter", p: P.IMAGE_CONVERTER, Icon: Image },
     { label: "Doc to PDF", p: P.DOC, Icon: FileText },
     { label: "Word to PDF", p: P.WORD_PDF, Icon: FileText },
     { label: "PDF to Doc", p: P.PDF, Icon: FileOutput },
@@ -1244,7 +1246,6 @@ function Header({ page, go }) {
     { label: "JPG to PDF", p: P.JPG_TO_PDF, Icon: Image },
     { label: "PNG to PDF", p: P.PNG_TO_PDF, Icon: Image },
     { label: "Image to PDF", p: P.IMG, Icon: Image },
-    { label: "Image Converter", p: P.IMAGE_CONVERTER, Icon: Image },
     { label: "OCR PDF", p: P.OCR, Icon: FileText },
     { label: "FAQ", p: P.FAQ, Icon: HelpCircle },
   ];
