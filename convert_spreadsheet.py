@@ -1,8 +1,54 @@
 import shutil
 import subprocess
+import zipfile
+from io import BytesIO
 from pathlib import Path
+from xml.etree import ElementTree
 
 from convert_doc import ps_quote
+
+
+SPREADSHEET_NS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+
+
+def prepare_ooxml_workbook(input_path, output_path):
+    """Preserve Excel print metadata while fitting each worksheet to one PDF page."""
+    input_path = Path(input_path)
+    output_path = Path(output_path)
+    with zipfile.ZipFile(input_path, "r") as source, zipfile.ZipFile(output_path, "w") as target:
+        for item in source.infolist():
+            data = source.read(item.filename)
+            if item.filename.startswith("xl/worksheets/sheet") and item.filename.endswith(".xml"):
+                namespaces = {}
+                for _event, (prefix, uri) in ElementTree.iterparse(BytesIO(data), events=("start-ns",)):
+                    namespaces[prefix] = uri
+                for prefix, uri in namespaces.items():
+                    if prefix != "xml" and not (prefix.startswith("ns") and prefix[2:].isdigit()):
+                        ElementTree.register_namespace(prefix or "", uri)
+                root = ElementTree.fromstring(data)
+                qualified = lambda name: f"{{{SPREADSHEET_NS}}}{name}"
+
+                sheet_properties = root.find(qualified("sheetPr"))
+                if sheet_properties is None:
+                    sheet_properties = ElementTree.Element(qualified("sheetPr"))
+                    root.insert(0, sheet_properties)
+                page_setup_properties = sheet_properties.find(qualified("pageSetUpPr"))
+                if page_setup_properties is None:
+                    page_setup_properties = ElementTree.SubElement(sheet_properties, qualified("pageSetUpPr"))
+                page_setup_properties.set("fitToPage", "1")
+                page_setup_properties.set("autoPageBreaks", "0")
+
+                page_setup = root.find(qualified("pageSetup"))
+                if page_setup is None:
+                    page_setup = ElementTree.Element(qualified("pageSetup"))
+                    page_margins = root.find(qualified("pageMargins"))
+                    insert_at = list(root).index(page_margins) + 1 if page_margins is not None else len(root)
+                    root.insert(insert_at, page_setup)
+                page_setup.attrib.pop("scale", None)
+                page_setup.set("fitToWidth", "1")
+                page_setup.set("fitToHeight", "1")
+                data = ElementTree.tostring(root, encoding="utf-8", xml_declaration=True)
+            target.writestr(item, data)
 
 
 def convert_spreadsheet_to_pdf(input_path, output_path):
@@ -10,21 +56,40 @@ def convert_spreadsheet_to_pdf(input_path, output_path):
     output_path = Path(output_path).resolve()
     office = shutil.which("soffice") or shutil.which("libreoffice")
     if office:
+        conversion_source = input_path
+        if input_path.suffix.lower() in {".xlsx", ".xlsm"}:
+            conversion_source = output_path.parent / f"{input_path.stem}-print-ready{input_path.suffix.lower()}"
+            try:
+                prepare_ooxml_workbook(input_path, conversion_source)
+            except (OSError, zipfile.BadZipFile, ElementTree.ParseError) as exc:
+                raise ValueError("The uploaded Excel workbook is invalid or damaged.") from exc
+        profile_dir = output_path.parent / ".libreoffice-profile"
+        profile_dir.mkdir(exist_ok=True)
+        pdf_options = (
+            'pdf:calc_pdf_Export:{"UseLosslessCompression":{"type":"boolean","value":"true"},'
+            '"Quality":{"type":"long","value":"100"},'
+            '"ReduceImageResolution":{"type":"boolean","value":"false"}}'
+        )
         result = subprocess.run(
             [
                 office,
+                f"-env:UserInstallation={profile_dir.as_uri()}",
                 "--headless",
+                "--nologo",
+                "--nodefault",
+                "--nolockcheck",
+                "--nofirststartwizard",
                 "--convert-to",
-                "pdf:calc_pdf_Export",
+                pdf_options,
                 "--outdir",
                 str(output_path.parent),
-                str(input_path),
+                str(conversion_source),
             ],
             capture_output=True,
             text=True,
             timeout=180,
         )
-        generated = output_path.parent / f"{input_path.stem}.pdf"
+        generated = output_path.parent / f"{conversion_source.stem}.pdf"
         if result.returncode != 0 or not generated.exists():
             raise RuntimeError((result.stderr or result.stdout or "LibreOffice Calc conversion failed.").strip())
         if generated != output_path:

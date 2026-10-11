@@ -13,6 +13,8 @@ RUN apt-get update \
       ghostscript \
       fonts-dejavu \
       fonts-liberation \
+      fonts-crosextra-carlito \
+      fonts-crosextra-caladea \
       fontconfig \
     && rm -rf /var/lib/apt/lists/*
 

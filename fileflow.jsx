@@ -813,7 +813,7 @@ const META = {
     convert: docxToPdf,
   },
   [P.EXCEL_PDF]: {
-    title: "Excel to PDF", sub: "Convert spreadsheets and workbooks into clean, shareable PDF files",
+    title: "Excel to PDF", sub: "Fit each worksheet to one PDF page while preserving print layout and formatting",
     Icon: FileSpreadsheet, accent: "#15803D",
     accepts: ".xls,.xlsx,.xlsm,.ods,.csv", acceptLabel: "XLS, XLSX, XLSM, ODS, CSV",
     FromIcon: FileSpreadsheet, ToIcon: FileOutput, from: "Spreadsheet", to: "PDF",
@@ -940,7 +940,7 @@ const TOOL_SEO = {
     useCases: ["Share financial reports without editing", "Print worksheets consistently", "Archive tables, charts and workbook sheets"],
     steps: ["Upload one or more XLS, XLSX, XLSM, ODS or CSV files.", "Start conversion and keep the browser open while each workbook is rendered.", "Download the generated PDF files and review page breaks."],
     faqs: [
-      ["Are all workbook sheets included?", "Yes. The converter exports the workbook using its saved sheet visibility, print areas and page settings."],
+      ["Are all workbook sheets included?", "Yes. Each visible worksheet is fitted to one PDF page while preserving its print area, margins, orientation and paper size."],
       ["Are formulas preserved?", "The PDF contains the displayed formula results. PDF output is not editable like the original spreadsheet."],
       ["Will charts and colors stay visible?", "LibreOffice Calc or Microsoft Excel renders supported charts, formatting, borders and colors into the PDF."],
     ],
