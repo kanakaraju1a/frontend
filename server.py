@@ -10,6 +10,7 @@ from urllib.parse import parse_qs, urlparse
 
 from convert_pdf import convert_pdf_to_docx
 from convert_doc import convert_doc_to_pdf
+from convert_spreadsheet import convert_spreadsheet_to_pdf
 from compress_pdf import compress_pdf
 
 HOST = os.environ.get("HOST", "0.0.0.0")
@@ -24,6 +25,7 @@ ALLOWED_ORIGINS = {
 ALLOW_VERCEL_PREVIEWS = os.environ.get("FILEFLOW_ALLOW_VERCEL_PREVIEWS", "false").lower() == "true"
 PDF_EXTENSIONS = {".pdf"}
 DOC_EXTENSIONS = {".doc", ".docx", ".rtf", ".odt", ".txt"}
+SPREADSHEET_EXTENSIONS = {".xls", ".xlsx", ".xlsm", ".ods", ".csv"}
 
 
 def safe_name(name):
@@ -68,6 +70,7 @@ def capabilities():
     return {
         "pdfToDocument": True,
         "documentToPdf": bool(shutil.which("soffice") or shutil.which("libreoffice") or (os.name == "nt" and shutil.which("powershell"))),
+        "spreadsheetToPdf": bool(shutil.which("soffice") or shutil.which("libreoffice") or (os.name == "nt" and shutil.which("powershell"))),
         "compressPdf": bool(shutil.which("gs") or shutil.which("gswin64c") or shutil.which("gswin32c")),
     }
 
@@ -86,6 +89,13 @@ def validate_file_content(route, suffix, data):
             raise ValueError("The uploaded RTF file is invalid or damaged.")
         if suffix == ".txt" and b"\x00" in data[:8192]:
             raise ValueError("The uploaded TXT file appears to be binary data.")
+    if route == "/convert-excel-pdf":
+        if suffix in {".xlsx", ".xlsm", ".ods"} and not data.startswith(b"PK"):
+            raise ValueError("The uploaded spreadsheet is invalid or damaged.")
+        if suffix == ".xls" and not data.startswith(b"\xd0\xcf\x11\xe0"):
+            raise ValueError("The uploaded XLS file is invalid or damaged.")
+        if suffix == ".csv" and b"\x00" in data[:8192]:
+            raise ValueError("The uploaded CSV file appears to be binary data.")
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -130,7 +140,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         parsed_path = urlparse(self.path)
         route = parsed_path.path
-        if route not in {"/convert", "/convert-doc-pdf", "/compress-pdf"}:
+        if route not in {"/convert", "/convert-doc-pdf", "/convert-excel-pdf", "/compress-pdf"}:
             self.send_error(404)
             return
 
@@ -155,6 +165,8 @@ class Handler(BaseHTTPRequestHandler):
                     raise ValueError("Compress PDF accepts PDF files only.")
                 if route == "/convert-doc-pdf" and suffix not in DOC_EXTENSIONS:
                     raise ValueError("Document to PDF accepts DOC, DOCX, RTF, ODT and TXT files only.")
+                if route == "/convert-excel-pdf" and suffix not in SPREADSHEET_EXTENSIONS:
+                    raise ValueError("Excel to PDF accepts XLS, XLSX, XLSM, ODS and CSV files only.")
                 validate_file_content(route, suffix, pdf_bytes)
                 input_file = tmpdir / f"input{suffix}"
                 input_file.write_bytes(pdf_bytes)
@@ -168,6 +180,12 @@ class Handler(BaseHTTPRequestHandler):
                 elif route == "/convert-doc-pdf":
                     output_file = tmpdir / "output.pdf"
                     convert_doc_to_pdf(input_file, output_file)
+                    result_bytes = output_file.read_bytes()
+                    content_type = "application/pdf"
+                    download_name = source_name + ".pdf"
+                elif route == "/convert-excel-pdf":
+                    output_file = tmpdir / "output.pdf"
+                    convert_spreadsheet_to_pdf(input_file, output_file)
                     result_bytes = output_file.read_bytes()
                     content_type = "application/pdf"
                     download_name = source_name + ".pdf"

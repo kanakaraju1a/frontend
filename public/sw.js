@@ -1,4 +1,4 @@
-const CACHE_NAME = "fileflow-v1";
+const CACHE_NAME = "fileflow-v2";
 const APP_SHELL = [
   "/",
   "/offline.html",
@@ -6,6 +6,7 @@ const APP_SHELL = [
   "/site.webmanifest",
   "/pdf-to-doc/",
   "/doc-to-pdf/",
+  "/excel-to-pdf/",
   "/compress-pdf/",
   "/pdf-editor/",
   "/image-converter/",

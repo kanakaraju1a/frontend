@@ -31,8 +31,15 @@ class ServerUnitTests(unittest.TestCase):
 
     def test_capabilities_have_stable_boolean_shape(self):
         result = capabilities()
-        self.assertEqual(set(result), {"pdfToDocument", "documentToPdf", "compressPdf"})
+        self.assertEqual(set(result), {"pdfToDocument", "documentToPdf", "spreadsheetToPdf", "compressPdf"})
         self.assertTrue(all(isinstance(value, bool) for value in result.values()))
+
+    def test_rejects_extension_spoofed_excel_workbook(self):
+        with self.assertRaisesRegex(ValueError, "invalid or damaged"):
+            validate_file_content("/convert-excel-pdf", ".xlsx", b"not really a workbook")
+
+    def test_accepts_text_csv_content(self):
+        validate_file_content("/convert-excel-pdf", ".csv", b"name,total\nExample,42\n")
 
 
 class HealthEndpointTests(unittest.TestCase):

@@ -26,6 +26,7 @@ export default defineConfig({
         main: "index.html",
         docToPdf: "doc-to-pdf/index.html",
         wordToPdf: "word-to-pdf/index.html",
+        excelToPdf: "excel-to-pdf/index.html",
         pdfToDoc: "pdf-to-doc/index.html",
         pdfToWord: "pdf-to-word/index.html",
         imageToPdf: "image-to-pdf/index.html",

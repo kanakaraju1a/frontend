@@ -3,7 +3,7 @@ import {
   FileText, FileOutput, Image, ArrowRight, Upload, Download,
   CheckCircle, X, ChevronDown, Menu, Home, HelpCircle, Zap,
   Shield, Gift, Smartphone, RotateCcw, ChevronRight, File, AlertCircle,
-  Plus, Trash2, Type, ImagePlus, Copy, ZoomIn, ZoomOut
+  Plus, Trash2, Type, ImagePlus, Copy, ZoomIn, ZoomOut, FileSpreadsheet
 } from "lucide-react";
 
 /* ─── Load external libs dynamically ─── */
@@ -240,6 +240,15 @@ async function docxToPdf(files, onProgress) {
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     await postFile("/convert-doc-pdf", file, file.name.replace(/\.(docx?|odt|rtf|txt)$/i, "") + ".pdf", onProgress, Math.round((i / files.length) * 100));
+    onProgress(Math.round(((i + 1) / files.length) * 100));
+  }
+}
+
+async function excelToPdf(files, onProgress) {
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const outputName = file.name.replace(/\.(xlsx?|xlsm|ods|csv)$/i, "") + ".pdf";
+    await postFile("/convert-excel-pdf", file, outputName, onProgress, Math.round((i / files.length) * 100));
     onProgress(Math.round(((i + 1) / files.length) * 100));
   }
 }
@@ -543,19 +552,20 @@ const T = {
 const SITE_URL = "https://file-flows.vercel.app";
 
 const P = {
-  HOME: "home", DOC: "doc-to-pdf", WORD_PDF: "word-to-pdf", PDF: "pdf-to-doc", PDF_WORD: "pdf-to-word", IMG: "img-to-pdf",
+  HOME: "home", DOC: "doc-to-pdf", WORD_PDF: "word-to-pdf", EXCEL_PDF: "excel-to-pdf", PDF: "pdf-to-doc", PDF_WORD: "pdf-to-word", IMG: "img-to-pdf",
   PDF_TO_JPG: "pdf-to-jpg", JPG_TO_PDF: "jpg-to-pdf", PNG_TO_PDF: "png-to-pdf", IMAGE_CONVERTER: "image-converter",
   MERGE: "merge-pdf", SPLIT: "split-pdf", COMPRESS: "compress-pdf", EDITOR: "pdf-editor", OCR: "ocr-pdf",
   FAQ: "faq", ABOUT: "about", CONTACT: "contact", PRIVACY: "privacy-policy",
   TERMS: "terms", SECURITY: "security", FORMATS: "supported-formats", QUALITY: "conversion-quality",
 };
 
-const BACKEND_PAGES = new Set([P.DOC, P.WORD_PDF, P.PDF, P.PDF_WORD, P.COMPRESS]);
+const BACKEND_PAGES = new Set([P.DOC, P.WORD_PDF, P.EXCEL_PDF, P.PDF, P.PDF_WORD, P.COMPRESS]);
 
 const PAGE_PATH = {
   [P.HOME]: "/",
   [P.DOC]: "/doc-to-pdf/",
   [P.WORD_PDF]: "/word-to-pdf/",
+  [P.EXCEL_PDF]: "/excel-to-pdf/",
   [P.PDF]: "/pdf-to-doc/",
   [P.PDF_WORD]: "/pdf-to-word/",
   [P.IMG]: "/image-to-pdf/",
@@ -585,6 +595,8 @@ const PATH_PAGE = {
   "/doc-to-pdf/": P.DOC,
   "/word-to-pdf": P.WORD_PDF,
   "/word-to-pdf/": P.WORD_PDF,
+  "/excel-to-pdf": P.EXCEL_PDF,
+  "/excel-to-pdf/": P.EXCEL_PDF,
   "/pdf-to-doc": P.PDF,
   "/pdf-to-doc/": P.PDF,
   "/pdf-to-word": P.PDF_WORD,
@@ -631,6 +643,7 @@ const PAGE_LABEL = {
   [P.HOME]: "Home",
   [P.DOC]: "Document to PDF",
   [P.WORD_PDF]: "Word to PDF",
+  [P.EXCEL_PDF]: "Excel to PDF",
   [P.PDF]: "PDF to Document",
   [P.PDF_WORD]: "PDF to Word",
   [P.IMG]: "Image to PDF",
@@ -655,8 +668,8 @@ const PAGE_LABEL = {
 
 const SEO = {
   [P.HOME]: {
-    title: "FileFlow - Free PDF, Document and Image Converter",
-    description: "Free online file converter for PDF to DOCX, Word to PDF, image to PDF, merge PDF, split PDF, compress PDF and PDF editing tools.",
+    title: "FileFlow - Free PDF, Document, Excel and Image Converter",
+    description: "Free online file converter for PDF to DOCX, Word and Excel to PDF, image conversion, merge PDF, split PDF, compress PDF and PDF editing tools.",
   },
   [P.DOC]: {
     title: "DOC to PDF Converter - Convert Word to PDF Free | FileFlow",
@@ -665,6 +678,10 @@ const SEO = {
   [P.WORD_PDF]: {
     title: "Word to PDF Converter - Convert DOCX to PDF | FileFlow",
     description: "Convert Word DOC and DOCX files to PDF online with FileFlow. Upload a Word document, create a PDF and download the finished file.",
+  },
+  [P.EXCEL_PDF]: {
+    title: "Excel to PDF Converter - Convert XLSX, XLS and CSV | FileFlow",
+    description: "Convert Excel XLS, XLSX, XLSM, ODS and CSV spreadsheets to PDF online. Preserve sheets, tables, charts, colors and print layout with FileFlow.",
   },
   [P.PDF]: {
     title: "PDF to DOC Converter - Convert PDF to Word Free | FileFlow",
@@ -749,9 +766,10 @@ const SEO = {
 };
 
 const SEO_KEYWORDS = {
-  [P.HOME]: "file converter, free file converter, pdf converter, document converter, image to pdf, pdf to word, word to pdf, merge pdf, split pdf, compress pdf, pdf editor",
+  [P.HOME]: "file converter, free file converter, pdf converter, document converter, excel to pdf, xlsx to pdf, image to pdf, pdf to word, word to pdf, merge pdf, split pdf, compress pdf, pdf editor",
   [P.DOC]: "doc to pdf converter, docx to pdf, word to pdf online, convert document to pdf, rtf to pdf, odt to pdf, txt to pdf, free word to pdf converter",
   [P.WORD_PDF]: "word to pdf converter, docx to pdf online, convert word file to pdf, free word to pdf, doc to pdf, microsoft word to pdf",
+  [P.EXCEL_PDF]: "excel to pdf converter, xlsx to pdf, xls to pdf, spreadsheet to pdf, csv to pdf, ods to pdf, convert excel workbook to pdf",
   [P.PDF]: "pdf to doc converter, pdf to word, pdf to docx, layout preserving pdf to doc, visual pdf to word, free pdf to word converter",
   [P.PDF_WORD]: "pdf to word converter, convert pdf to word, pdf to docx online, layout preserving pdf to word, visual pdf document to word",
   [P.IMG]: "image to pdf converter, jpg png to pdf, photos to pdf, webp to pdf, combine images into pdf, image converter",
@@ -793,6 +811,13 @@ const META = {
     accepts: ".doc,.docx", acceptLabel: "DOC, DOCX",
     FromIcon: FileText, ToIcon: FileOutput, from: "Word", to: "PDF",
     convert: docxToPdf,
+  },
+  [P.EXCEL_PDF]: {
+    title: "Excel to PDF", sub: "Convert spreadsheets and workbooks into clean, shareable PDF files",
+    Icon: FileSpreadsheet, accent: "#15803D",
+    accepts: ".xls,.xlsx,.xlsm,.ods,.csv", acceptLabel: "XLS, XLSX, XLSM, ODS, CSV",
+    FromIcon: FileSpreadsheet, ToIcon: FileOutput, from: "Spreadsheet", to: "PDF",
+    convert: excelToPdf,
   },
   [P.PDF]: {
     title: "PDF to Document", sub: "Preserve PDF page layout in a Word-compatible DOCX file",
@@ -875,6 +900,7 @@ const META = {
 
 const TOOLS = [
   { page: P.DOC, Icon: FileText, label: "Document to PDF", desc: "Word, TXT, ODT, RTF", accent: T.color.accent.doc },
+  { page: P.EXCEL_PDF, Icon: FileSpreadsheet, label: "Excel to PDF", desc: "XLS, XLSX, ODS, CSV", accent: "#15803D" },
   { page: P.PDF, Icon: FileOutput, label: "PDF to Document", desc: "Layout-preserving DOCX", accent: T.color.accent.pdf },
   { page: P.IMG, Icon: Image, label: "Image to PDF", desc: "JPG, PNG, WebP and more", accent: T.color.accent.img },
   { page: P.MERGE, Icon: FileOutput, label: "Merge PDF", desc: "Combine PDFs", accent: T.color.accent.pdf },
@@ -891,7 +917,8 @@ const FAQ_DATA = [
   { q: "Are conversions really free?", a: "Yes — FileFlow has no signup or watermarks. Browser tools run locally, while document conversion and compression use the configured backend." },
   { q: "Is my data secure?", a: "Image and PDF utility tools run in the browser. Word and advanced PDF conversions use the configured FileFlow converter service, which should delete temporary files after conversion." },
   { q: "What file size is supported?", a: "Up to 100 MB per file. For large PDFs with many pages, conversion may take a few seconds." },
-  { q: "Does DOCX to PDF preserve formatting?", a: "DOCX to PDF uses Microsoft Word export in the local converter setup for better layout, font, image and table preservation." },
+  { q: "Does DOCX to PDF preserve formatting?", a: "DOCX to PDF uses LibreOffice or Microsoft Word export for better layout, font, image and table preservation." },
+  { q: "Can FileFlow convert Excel spreadsheets to PDF?", a: "Yes. Upload XLS, XLSX, XLSM, ODS or CSV files and FileFlow renders each spreadsheet as a PDF through the configured backend." },
   { q: "Which browsers are supported?", a: "Chrome, Firefox, Safari and Edge — all modern versions on desktop and mobile." },
 ];
 
@@ -905,6 +932,17 @@ const TOOL_SEO = {
       ["Can I convert DOCX to PDF online?", "Yes. Upload a DOCX file and FileFlow converts it to PDF using the configured backend converter."],
       ["Will fonts and images stay the same?", "Common fonts, images and tables are preserved best when the backend has LibreOffice or Microsoft Word available."],
       ["Is DOC to PDF free?", "Yes, FileFlow is free to use for document to PDF conversion."],
+    ],
+  },
+  [P.EXCEL_PDF]: {
+    intro: "Convert Excel workbooks and spreadsheets into PDF files that are easy to share, print and archive. FileFlow uses a spreadsheet rendering engine to retain worksheet content, tables, charts, colors, borders and existing print settings.",
+    searches: ["excel to pdf converter", "xlsx to pdf", "xls to pdf", "spreadsheet to pdf", "csv to pdf", "ods to pdf"],
+    useCases: ["Share financial reports without editing", "Print worksheets consistently", "Archive tables, charts and workbook sheets"],
+    steps: ["Upload one or more XLS, XLSX, XLSM, ODS or CSV files.", "Start conversion and keep the browser open while each workbook is rendered.", "Download the generated PDF files and review page breaks."],
+    faqs: [
+      ["Are all workbook sheets included?", "Yes. The converter exports the workbook using its saved sheet visibility, print areas and page settings."],
+      ["Are formulas preserved?", "The PDF contains the displayed formula results. PDF output is not editable like the original spreadsheet."],
+      ["Will charts and colors stay visible?", "LibreOffice Calc or Microsoft Excel renders supported charts, formatting, borders and colors into the PDF."],
     ],
   },
   [P.WORD_PDF]: {
@@ -1041,8 +1079,9 @@ const TOOL_SEO = {
 };
 
 const RELATED_TOOL_PAGES = {
-  [P.DOC]: [P.WORD_PDF, P.PDF, P.MERGE, P.COMPRESS],
-  [P.WORD_PDF]: [P.DOC, P.PDF_WORD, P.MERGE, P.COMPRESS],
+  [P.DOC]: [P.WORD_PDF, P.EXCEL_PDF, P.PDF, P.COMPRESS],
+  [P.WORD_PDF]: [P.DOC, P.EXCEL_PDF, P.PDF_WORD, P.COMPRESS],
+  [P.EXCEL_PDF]: [P.DOC, P.WORD_PDF, P.MERGE, P.COMPRESS],
   [P.PDF]: [P.PDF_WORD, P.DOC, P.OCR, P.EDITOR],
   [P.PDF_WORD]: [P.PDF, P.WORD_PDF, P.OCR, P.EDITOR],
   [P.IMG]: [P.IMAGE_CONVERTER, P.JPG_TO_PDF, P.PNG_TO_PDF, P.PDF_TO_JPG],
@@ -1257,7 +1296,7 @@ function Header({ page, go }) {
   const [open, setOpen] = useState(false);
   const navLinks = [
     { label: "Images", p: P.IMAGE_CONVERTER },
-    { label: "Doc → PDF", p: P.DOC }, { label: "PDF → Doc", p: P.PDF },
+    { label: "Doc → PDF", p: P.DOC }, { label: "Excel → PDF", p: P.EXCEL_PDF }, { label: "PDF → Doc", p: P.PDF },
     { label: "Merge", p: P.MERGE }, { label: "Split", p: P.SPLIT },
     { label: "Compress", p: P.COMPRESS }, { label: "PDF Editor", p: P.EDITOR }, { label: "PDF → JPG", p: P.PDF_TO_JPG },
     { label: "Image → PDF", p: P.IMG }, { label: "OCR", p: P.OCR },
@@ -1267,6 +1306,7 @@ function Header({ page, go }) {
     { label: "Image Converter", p: P.IMAGE_CONVERTER, Icon: Image },
     { label: "Doc to PDF", p: P.DOC, Icon: FileText },
     { label: "Word to PDF", p: P.WORD_PDF, Icon: FileText },
+    { label: "Excel to PDF", p: P.EXCEL_PDF, Icon: FileSpreadsheet },
     { label: "PDF to Doc", p: P.PDF, Icon: FileOutput },
     { label: "PDF to Word", p: P.PDF_WORD, Icon: FileOutput },
     { label: "Merge PDF", p: P.MERGE, Icon: FileOutput },
@@ -1379,6 +1419,8 @@ function useBackendStatus(page) {
         const payload = await response.json();
         const capability = page === P.COMPRESS
           ? payload.capabilities?.compressPdf
+          : page === P.EXCEL_PDF
+            ? payload.capabilities?.spreadsheetToPdf
           : page === P.DOC || page === P.WORD_PDF
             ? payload.capabilities?.documentToPdf
             : payload.capabilities?.pdfToDocument;
@@ -1565,7 +1607,7 @@ function ConverterPage({ meta, page }) {
       <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: T.radius.md, padding: "10px 14px", marginBottom: 20 }}>
         <Shield size={15} color="#2563EB" strokeWidth={2} style={{ flexShrink: 0 }} />
         <span style={{ fontFamily: T.font.body, fontSize: 13, color: "#1D4ED8" }}>
-          Private by design — browser tools run locally, while Word/PDF conversions use the configured FileFlow converter service.
+          Private by design — browser tools run locally, while document and spreadsheet conversions use the configured FileFlow converter service.
         </span>
       </div>
 
@@ -2732,13 +2774,14 @@ function HomePage({ go }) {
         <div style={{ textAlign: "center", maxWidth: 720, margin: "0 auto 30px" }}>
           <h2 style={{ fontFamily: T.font.display, fontWeight: 700, fontSize: "clamp(22px,4vw,34px)", color: T.color.dark, margin: "0 0 10px" }}>Popular FileFlow Converters</h2>
           <p style={{ fontFamily: T.font.body, fontSize: 14.5, color: T.color.mid, lineHeight: 1.7, margin: 0 }}>
-            Open the exact converter page from search results: PDF to DOC, Word to PDF, merge PDF, split PDF, compress PDF, PDF editor, PDF to JPG, JPG to PDF and PNG to PDF.
+            Open the exact converter page from search results: PDF to DOC, Word to PDF, Excel to PDF, merge PDF, split PDF, compress PDF, PDF editor and image tools.
           </p>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 14 }}>
           {[
             [P.PDF, "PDF to DOC converter", "Create layout-preserving Word DOCX files from PDF documents."],
             [P.DOC, "DOC to PDF converter", "Convert DOC, DOCX, RTF, ODT and TXT files to PDF."],
+            [P.EXCEL_PDF, "Excel to PDF converter", "Convert XLS, XLSX, XLSM, ODS and CSV spreadsheets to PDF."],
             [P.MERGE, "Merge PDF files", "Combine multiple PDFs into one organized document."],
             [P.SPLIT, "Split PDF pages", "Extract all pages, selected pages or custom ranges."],
             [P.COMPRESS, "Compress PDF online", "Reduce PDF file size with adjustable compression strength."],
@@ -2923,6 +2966,7 @@ const INFO_PAGE_CONTENT = {
     intro: "FileFlow supports the most common document, PDF and image conversion workflows.",
     items: [
       ["Documents", "DOC, DOCX, RTF, ODT and TXT to PDF."],
+      ["Spreadsheets", "XLS, XLSX, XLSM, ODS and CSV to PDF."],
       ["PDF", "PDF to DOCX, JPG, merge, split, compress and OCR page workflows."],
       ["Images", "JPG, JPEG, PNG, WebP, GIF, BMP and TIFF to PDF, with dedicated JPG and PNG pages."],
     ],
@@ -3060,7 +3104,7 @@ function Footer({ go }) {
           </div>
           <div>
             <p style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 11, color: "rgba(255,255,255,0.35)", marginBottom: 14, textTransform: "uppercase", letterSpacing: 1.2 }}>Tools</p>
-            {[{ l: "Document to PDF", p: P.DOC }, { l: "PDF to Document", p: P.PDF }, { l: "Merge PDF", p: P.MERGE }, { l: "Compress PDF", p: P.COMPRESS }, { l: "PDF Editor", p: P.EDITOR }, { l: "PDF to JPG", p: P.PDF_TO_JPG }, { l: "Image Converter", p: P.IMAGE_CONVERTER }].map(({ l, p }) => (
+            {[{ l: "Document to PDF", p: P.DOC }, { l: "Excel to PDF", p: P.EXCEL_PDF }, { l: "PDF to Document", p: P.PDF }, { l: "Merge PDF", p: P.MERGE }, { l: "Compress PDF", p: P.COMPRESS }, { l: "PDF Editor", p: P.EDITOR }, { l: "PDF to JPG", p: P.PDF_TO_JPG }, { l: "Image Converter", p: P.IMAGE_CONVERTER }].map(({ l, p }) => (
               <PageLink key={p} page={p} go={go} style={{ display: "block", fontFamily: T.font.body, fontSize: 13.5, color: "rgba(255,255,255,0.45)", margin: "0 0 10px", cursor: "pointer" }}>{l}</PageLink>
             ))}
           </div>
@@ -3186,8 +3230,10 @@ export default function App() {
         @keyframes ff-splash-pulse{0%{transform:translateX(-120%);}100%{transform:translateX(260%);}}
         .ff-splash{animation:ff-splash-out 1.15s ease forwards;}
         .ff-splash-bar{animation:ff-splash-pulse .95s ease-in-out infinite;}
-        @media(max-width:640px){.ff-desk-nav{display:none!important;}.ff-ham{display:flex!important;}.ff-bottom-tabs{display:block!important;}body{padding-bottom:78px;}.ff-pdf-editor-grid{grid-template-columns:1fr!important;}}
-        @media(min-width:641px){.ff-mob-menu{display:none!important;}.ff-bottom-tabs{display:none!important;}}
+        @media(max-width:1060px){.ff-desk-nav{display:none!important;}.ff-ham{display:flex!important;}}
+        @media(min-width:1061px){.ff-mob-menu{display:none!important;}}
+        @media(max-width:640px){.ff-bottom-tabs{display:block!important;}body{padding-bottom:78px;}.ff-pdf-editor-grid{grid-template-columns:1fr!important;}}
+        @media(min-width:641px){.ff-bottom-tabs{display:none!important;}}
         @media(max-width:980px){.ff-pdf-editor-grid{grid-template-columns:1fr!important;}}
         @media(min-width:1440px){
           .ff-side-ad{display:block!important;}
