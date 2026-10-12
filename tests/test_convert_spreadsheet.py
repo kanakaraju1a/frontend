@@ -4,7 +4,13 @@ import zipfile
 from pathlib import Path
 from unittest.mock import patch
 
-from convert_spreadsheet import convert_spreadsheet_to_pdf, prepare_ooxml_workbook
+from pypdf import PdfReader, PdfWriter
+
+from convert_spreadsheet import (
+    convert_spreadsheet_to_pdf,
+    normalize_calc_pdf_to_letter,
+    prepare_ooxml_workbook,
+)
 
 
 class SpreadsheetConversionTests(unittest.TestCase):
@@ -23,13 +29,36 @@ class SpreadsheetConversionTests(unittest.TestCase):
                 self.assertTrue(any("calc_pdf_Export" in argument for argument in command))
                 self.assertTrue(any("UseLosslessCompression" in argument for argument in command))
                 self.assertTrue(any(argument.startswith("-env:UserInstallation=") for argument in command))
-                Path(command[-1]).with_suffix(".pdf").write_bytes(b"%PDF-result")
+                generated = Path(command[-1]).with_suffix(".pdf")
+                writer = PdfWriter()
+                writer.add_blank_page(width=595.28, height=841.89)
+                with generated.open("wb") as result_file:
+                    writer.write(result_file)
                 return type("Result", (), {"returncode": 0, "stderr": "", "stdout": ""})()
 
             with patch("convert_spreadsheet.shutil.which", return_value="/usr/bin/libreoffice"), patch("convert_spreadsheet.subprocess.run", side_effect=fake_run):
                 convert_spreadsheet_to_pdf(source, output)
 
-            self.assertEqual(output.read_bytes(), b"%PDF-result")
+            converted = PdfReader(output)
+            self.assertAlmostEqual(float(converted.pages[0].mediabox.width), 612, places=1)
+            self.assertAlmostEqual(float(converted.pages[0].mediabox.height), 792, places=1)
+
+    def test_a4_pdf_is_normalized_to_letter_without_rasterizing(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as tmp:
+            folder = Path(tmp)
+            source = folder / "source.pdf"
+            output = folder / "output.pdf"
+            writer = PdfWriter()
+            writer.add_blank_page(width=595.28, height=841.89)
+            with source.open("wb") as source_file:
+                writer.write(source_file)
+
+            normalize_calc_pdf_to_letter(source, output)
+
+            converted = PdfReader(output)
+            self.assertEqual(len(converted.pages), 1)
+            self.assertAlmostEqual(float(converted.pages[0].mediabox.width), 612, places=1)
+            self.assertAlmostEqual(float(converted.pages[0].mediabox.height), 792, places=1)
 
     def test_print_preparation_preserves_page_settings_and_fits_sheet(self):
         with tempfile.TemporaryDirectory(dir=Path.cwd()) as tmp:

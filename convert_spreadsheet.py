@@ -6,9 +6,45 @@ from pathlib import Path
 from xml.etree import ElementTree
 
 from convert_doc import ps_quote
+from pypdf import PdfReader, PdfWriter, Transformation
 
 
 SPREADSHEET_NS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+A4_WIDTH = 595.28
+A4_HEIGHT = 841.89
+LETTER_WIDTH = 612
+LETTER_HEIGHT = 792
+EXCEL_LETTER_SCALE = 0.9275
+
+
+def normalize_calc_pdf_to_letter(input_path, output_path):
+    """Place A4 Calc pages on Letter canvases using Excel-compatible geometry."""
+    reader = PdfReader(input_path)
+    writer = PdfWriter()
+    for source_page in reader.pages:
+        width = float(source_page.mediabox.width)
+        height = float(source_page.mediabox.height)
+        is_portrait_a4 = abs(width - A4_WIDTH) < 2 and abs(height - A4_HEIGHT) < 2
+        is_landscape_a4 = abs(width - A4_HEIGHT) < 2 and abs(height - A4_WIDTH) < 2
+        if not (is_portrait_a4 or is_landscape_a4):
+            writer.add_page(source_page)
+            continue
+
+        target_width, target_height = (
+            (LETTER_WIDTH, LETTER_HEIGHT) if is_portrait_a4 else (LETTER_HEIGHT, LETTER_WIDTH)
+        )
+        scaled_width = width * EXCEL_LETTER_SCALE
+        scaled_height = height * EXCEL_LETTER_SCALE
+        x_offset = (target_width - scaled_width) / 2
+        y_offset = max(0, (target_height - scaled_height) / 5)
+        target_page = writer.add_blank_page(width=target_width, height=target_height)
+        target_page.merge_transformed_page(
+            source_page,
+            Transformation().scale(EXCEL_LETTER_SCALE).translate(x_offset, y_offset),
+        )
+
+    with open(output_path, "wb") as output:
+        writer.write(output)
 
 
 def prepare_ooxml_workbook(input_path, output_path):
@@ -92,8 +128,11 @@ def convert_spreadsheet_to_pdf(input_path, output_path):
         generated = output_path.parent / f"{conversion_source.stem}.pdf"
         if result.returncode != 0 or not generated.exists():
             raise RuntimeError((result.stderr or result.stdout or "LibreOffice Calc conversion failed.").strip())
+        normalized = output_path.parent / f"{conversion_source.stem}-letter.pdf"
+        normalize_calc_pdf_to_letter(generated, normalized)
+        normalized.replace(output_path)
         if generated != output_path:
-            generated.replace(output_path)
+            generated.unlink(missing_ok=True)
         return
 
     if not shutil.which("powershell"):
