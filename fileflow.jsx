@@ -260,8 +260,7 @@ async function excelToPdf(files, onProgress) {
 
   const archive = new JSZip();
   const usedNames = new Set();
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
+  const jobs = files.map(file => {
     const baseName = file.name.replace(/\.(xlsx?|xlsm|ods|csv)$/i, "");
     let outputName = `${baseName}.pdf`;
     let suffix = 2;
@@ -270,15 +269,30 @@ async function excelToPdf(files, onProgress) {
       suffix += 1;
     }
     usedNames.add(outputName.toLowerCase());
-    const result = await fetchConvertedFile(
-      "/convert-excel-pdf",
-      file,
-      onProgress,
-      Math.round((i / files.length) * 90),
-    );
-    archive.file(outputName, result);
-    onProgress(Math.round(((i + 1) / files.length) * 90));
-  }
+    return { file, outputName };
+  });
+
+  let nextJob = 0;
+  let completed = 0;
+  const worker = async () => {
+    while (nextJob < jobs.length) {
+      const jobIndex = nextJob;
+      nextJob += 1;
+      const { file, outputName } = jobs[jobIndex];
+      const result = await fetchConvertedFile(
+        "/convert-excel-pdf",
+        file,
+        () => {},
+        0,
+      );
+      archive.file(outputName, result);
+      completed += 1;
+      onProgress(Math.round((completed / jobs.length) * 90));
+    }
+  };
+  const workerCount = Math.min(2, jobs.length);
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+
   const zipBlob = await archive.generateAsync(
     { type: "blob", compression: "STORE", mimeType: "application/zip" },
     metadata => onProgress(90 + Math.round(metadata.percent / 10)),
@@ -847,7 +861,7 @@ const META = {
     convert: docxToPdf,
   },
   [P.EXCEL_PDF]: {
-    title: "Excel to PDF", sub: "Fit each worksheet to one PDF page while preserving print layout and formatting",
+    title: "Excel to PDF", sub: "Fast batch conversion with high-quality print layout and formatting",
     Icon: FileSpreadsheet, accent: "#15803D",
     accepts: ".xls,.xlsx,.xlsm,.ods,.csv", acceptLabel: "XLS, XLSX, XLSM, ODS, CSV",
     FromIcon: FileSpreadsheet, ToIcon: FileOutput, from: "Spreadsheet", to: "PDF",
@@ -975,7 +989,7 @@ const TOOL_SEO = {
     steps: ["Upload one or more XLS, XLSX, XLSM, ODS or CSV files.", "Start conversion and keep the browser open while each workbook is rendered.", "Download the generated PDF files and review page breaks."],
     faqs: [
       ["Are all workbook sheets included?", "Yes. Each visible worksheet is fitted to one PDF page while preserving its print area, margins, orientation and paper size."],
-      ["What happens when I upload multiple spreadsheets?", "FileFlow converts every spreadsheet separately and downloads all generated PDFs together in one ZIP file."],
+      ["What happens when I upload multiple spreadsheets?", "FileFlow processes up to two spreadsheets at once, converts each one separately and downloads all generated PDFs together in one ZIP file."],
       ["Are formulas preserved?", "The PDF contains the displayed formula results. PDF output is not editable like the original spreadsheet."],
       ["Will charts and colors stay visible?", "LibreOffice Calc or Microsoft Excel renders supported charts, formatting, borders and colors into the PDF."],
     ],
