@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import JSZip from "jszip";
 import {
   FileText, FileOutput, Image, ArrowRight, Upload, Download,
   CheckCircle, X, ChevronDown, Menu, Home, HelpCircle, Zap,
@@ -157,7 +158,7 @@ function trackUploadedFiles(count) {
   }
 }
 
-async function postFile(endpoint, file, outputName, onProgress, progressValue) {
+async function fetchConvertedFile(endpoint, file, onProgress, progressValue) {
   const formData = new FormData();
   formData.append("file", file, file.name);
   onProgress(progressValue);
@@ -178,7 +179,11 @@ async function postFile(endpoint, file, outputName, onProgress, progressValue) {
     throw new Error(details);
   }
 
-  downloadBlob(await response.blob(), outputName);
+  return response.blob();
+}
+
+async function postFile(endpoint, file, outputName, onProgress, progressValue) {
+  downloadBlob(await fetchConvertedFile(endpoint, file, onProgress, progressValue), outputName);
 }
 
 async function postFileResult(endpoint, file, outputName, onProgress, progressValue) {
@@ -245,12 +250,41 @@ async function docxToPdf(files, onProgress) {
 }
 
 async function excelToPdf(files, onProgress) {
+  if (files.length === 1) {
+    const file = files[0];
+    const outputName = file.name.replace(/\.(xlsx?|xlsm|ods|csv)$/i, "") + ".pdf";
+    await postFile("/convert-excel-pdf", file, outputName, onProgress, 0);
+    onProgress(100);
+    return;
+  }
+
+  const archive = new JSZip();
+  const usedNames = new Set();
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
-    const outputName = file.name.replace(/\.(xlsx?|xlsm|ods|csv)$/i, "") + ".pdf";
-    await postFile("/convert-excel-pdf", file, outputName, onProgress, Math.round((i / files.length) * 100));
-    onProgress(Math.round(((i + 1) / files.length) * 100));
+    const baseName = file.name.replace(/\.(xlsx?|xlsm|ods|csv)$/i, "");
+    let outputName = `${baseName}.pdf`;
+    let suffix = 2;
+    while (usedNames.has(outputName.toLowerCase())) {
+      outputName = `${baseName}-${suffix}.pdf`;
+      suffix += 1;
+    }
+    usedNames.add(outputName.toLowerCase());
+    const result = await fetchConvertedFile(
+      "/convert-excel-pdf",
+      file,
+      onProgress,
+      Math.round((i / files.length) * 90),
+    );
+    archive.file(outputName, result);
+    onProgress(Math.round(((i + 1) / files.length) * 90));
   }
+  const zipBlob = await archive.generateAsync(
+    { type: "blob", compression: "STORE", mimeType: "application/zip" },
+    metadata => onProgress(90 + Math.round(metadata.percent / 10)),
+  );
+  downloadBlob(zipBlob, "fileflow-excel-pdfs.zip");
+  onProgress(100);
 }
 
 async function txtToPdf(files, onProgress) {
@@ -941,6 +975,7 @@ const TOOL_SEO = {
     steps: ["Upload one or more XLS, XLSX, XLSM, ODS or CSV files.", "Start conversion and keep the browser open while each workbook is rendered.", "Download the generated PDF files and review page breaks."],
     faqs: [
       ["Are all workbook sheets included?", "Yes. Each visible worksheet is fitted to one PDF page while preserving its print area, margins, orientation and paper size."],
+      ["What happens when I upload multiple spreadsheets?", "FileFlow converts every spreadsheet separately and downloads all generated PDFs together in one ZIP file."],
       ["Are formulas preserved?", "The PDF contains the displayed formula results. PDF output is not editable like the original spreadsheet."],
       ["Will charts and colors stay visible?", "LibreOffice Calc or Microsoft Excel renders supported charts, formatting, borders and colors into the PDF."],
     ],
@@ -1649,7 +1684,9 @@ function ConverterPage({ meta, page }) {
           <CheckCircle size={44} color="#059669" strokeWidth={1.5} style={{ marginBottom: 14 }} />
           <h2 style={{ fontFamily: T.font.display, fontWeight: 700, fontSize: 26, color: T.color.dark, margin: "0 0 8px" }}>Download Started</h2>
           <p style={{ fontFamily: T.font.body, fontSize: 14, color: T.color.mid, margin: "0 0 28px" }}>
-            {files.length} file{files.length > 1 ? "s" : ""} converted — check your downloads folder.
+            {page === P.EXCEL_PDF && files.length > 1
+              ? `${files.length} files converted and packed into one ZIP file.`
+              : `${files.length} file${files.length > 1 ? "s" : ""} converted — check your downloads folder.`}
           </p>
           <button onClick={reset} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: T.color.dark, color: "#fff", border: "none", borderRadius: T.radius.md, padding: "12px 28px", fontFamily: T.font.body, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
             <RotateCcw size={15} /> Convert More Files
@@ -1664,7 +1701,9 @@ function ConverterPage({ meta, page }) {
           borderRadius: T.radius.md, padding: "15px", fontFamily: T.font.body, fontWeight: 700,
           fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
         }}>
-          <Zap size={17} /> Convert &amp; Download {files.length} File{files.length > 1 ? "s" : ""}
+          <Zap size={17} /> {page === P.EXCEL_PDF && files.length > 1
+            ? `Convert & Download ZIP (${files.length} files)`
+            : `Convert & Download ${files.length} File${files.length > 1 ? "s" : ""}`}
         </button>
       )}
       {status === "error" && (
